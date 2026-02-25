@@ -9,7 +9,7 @@ from typing import Any
 import msgspec
 
 Position = tuple[float | None, float | None]
-# allow None as it exists in source data (esseker house)
+# allow None as it exists in source data (e.g. esseker house)
 
 
 class Point(msgspec.Struct, tag=True):

@@ -1,5 +1,9 @@
 """Classify input data."""
 
+IGNORED_FEATURE_KIND_THRESHOLD = 1000
+"""NB: Used to ignore feature kinds with too many members which would
+affect performance."""
+
 POINT_FEATURES = [
     # GeoJSON `Point`s from 'geojson' root dir, to be plotted as markers:
     "bush",
@@ -62,6 +66,3 @@ IGNORED_ROADS = [
     "road-bridge",
     "track-bridge",
 ]
-IGNORED_FEATURE_KIND_THRESHOLD = 1000
-"""NB: Used to ignore feature kinds with too many members which would
-affect performance."""

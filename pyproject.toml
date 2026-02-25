@@ -14,3 +14,14 @@ dev = [
     "ruff>=0.15.2",
     "ty>=0.0.18",
 ]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # Rules that conflict with Ruff formatter, or conflict with other rules:
+    "COM812",  # missing-trailing-comma
+    "D203",    # incorrect-blank-line-before-class
+    "D212",    # multi-line-summary-first-line
+    # Other
+    "ERA001",  # commented-out-code
+]

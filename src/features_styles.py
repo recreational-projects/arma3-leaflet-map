@@ -2,7 +2,7 @@
 
 from typing import Any
 
-FEATURE_ICONS: dict[str, str] = {
+ICONS: dict[str, str] = {
     # feature_kind: icon name
     "bunker": "x",
     "bush": "seedling",
@@ -54,7 +54,7 @@ FEATURE_ICONS: dict[str, str] = {
     "viewpoint": "eye",
 }
 
-FEATURE_ICON_COLORS: dict[str, str] = {
+ICON_COLORS: dict[str, str] = {
     # feature_kind: color
     # water:
     "powerwave": "blue",
@@ -90,7 +90,7 @@ FEATURE_ICON_COLORS: dict[str, str] = {
     "locations-namelocal": "lightgray",
 }
 
-FEATURE_LINE_STYLES: dict[str, dict[str, Any]] = {
+LINE_STYLES: dict[str, dict[str, Any]] = {
     "main_road": {
         "color": "orange",
         "weight": 4,
@@ -128,7 +128,7 @@ FEATURE_LINE_STYLES: dict[str, dict[str, Any]] = {
     },
 }
 
-FEATURE_POLYGON_STYLES: dict[str, dict[str, str]] = {
+POLYGON_STYLES: dict[str, dict[str, str]] = {
     # Includes multipolygon
     "forest": {
         "fill_color": "green",
