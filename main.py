@@ -56,6 +56,7 @@ def main() -> None:
         logger.warning(log_msg)
 
     source_dirs = list(SOURCE_DATA_PATH.iterdir())
+    PLOT_PATH.mkdir(exist_ok=True)
     existing_plots = [fp.stem for fp in list(PLOT_PATH.iterdir())]
     dirs_to_plot = [fp for fp in source_dirs if fp.stem not in existing_plots]
 
