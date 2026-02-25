@@ -11,12 +11,12 @@ from src.meh.modules.utils import geojson_gz_files_in_dir, summarise_features
 
 
 def load_features_from_dir(
-        *,
-        path: Path,
-        include: list[str] | None = None,
-        exclude: list[str] | None = None,
-        limit: int | None = None,
-        kind: str,
+    *,
+    path: Path,
+    include: list[str] | None = None,
+    exclude: list[str] | None = None,
+    limit: int | None = None,
+    kind: str,
 ) -> dict[str, list[GeoJSONFeature]]:
     """
     Load features from files in a directory.
@@ -74,8 +74,8 @@ def load_features_from_dir(
 
 
 def load_features_from_file(
-        *,
-        path: Path,
+    *,
+    path: Path,
 ) -> list[GeoJSONFeature]:
     """
     Load features from a `.geojson.gz` file.

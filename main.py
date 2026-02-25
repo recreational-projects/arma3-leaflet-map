@@ -42,8 +42,8 @@ from src.meh.plot import (
     plot_polygons_multi_series,
 )
 
-INPUT_DATA_RELATIVE_DIR = "../../source_data/grad_meh/"
-OUTPUT_RELATIVE_DIR = "../../plots"
+INPUT_DATA_RELATIVE_DIR = "../gruppe-adler/meh-data/"
+OUTPUT_RELATIVE_DIR = "maps"
 LOG_LEVEL = "INFO"
 
 

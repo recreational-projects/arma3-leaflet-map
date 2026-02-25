@@ -37,13 +37,13 @@ class MultiPolygon(msgspec.Struct, tag=True):
 
 
 Geometry = (
-        Point
-        #     | MultiPoint
-        | LineString
-        #     | MultiLineString
-        | Polygon
-        | MultiPolygon
-    #     | GeometryCollection
+    Point
+    #  | MultiPoint
+    | LineString
+    #  | MultiLineString
+    | Polygon
+    | MultiPolygon
+    #  | GeometryCollection
 )
 
 

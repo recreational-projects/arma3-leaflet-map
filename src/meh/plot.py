@@ -27,7 +27,7 @@ _DEGREES_LONGITUDE_TO_M = 111320
 
 
 def image_overlay(
-        image_path: Path, map_size: int
+    image_path: Path, map_size: int
 ) -> folium.raster_layers.ImageOverlay | None:
     """Return image overlay."""
     if not image_path.is_file():
@@ -44,9 +44,9 @@ def image_overlay(
 
 
 def plot_polygons_multi_series(
-        *,
-        map_: folium.Map,
-        feature_multiseries: dict[str, list[GeoJSONFeature]],
+    *,
+    map_: folium.Map,
+    feature_multiseries: dict[str, list[GeoJSONFeature]],
 ) -> None:
     """TO DO."""
     for feature_kind, features in feature_multiseries.items():
@@ -65,10 +65,10 @@ def plot_polygons_multi_series(
 
 
 def polygon_group(
-        *,
-        feature_kind: str,
-        features: list[GeoJSONFeature],
-        fill_color: str,
+    *,
+    feature_kind: str,
+    features: list[GeoJSONFeature],
+    fill_color: str,
 ) -> folium.FeatureGroup:
     """Return a group of polygons as a `folium.FeatureGroup`."""
     group = folium.FeatureGroup(
@@ -100,9 +100,9 @@ def polygon_group(
 
 
 def plot_multipolygons_multi_series(
-        *,
-        map_: folium.Map,
-        feature_multiseries: dict[str, list[GeoJSONFeature]],
+    *,
+    map_: folium.Map,
+    feature_multiseries: dict[str, list[GeoJSONFeature]],
 ) -> None:
     """TO DO."""
     for feature_kind, features in feature_multiseries.items():
@@ -124,10 +124,10 @@ def plot_multipolygons_multi_series(
 
 
 def multipolygon_group(
-        *,
-        feature_kind: str,
-        features: list[GeoJSONFeature],
-        fill_color: str,
+    *,
+    feature_kind: str,
+    features: list[GeoJSONFeature],
+    fill_color: str,
 ) -> folium.FeatureGroup:
     """Return a group of multipolygons as a `folium.FeatureGroup`."""
     group = folium.FeatureGroup(
@@ -156,9 +156,9 @@ def multipolygon_group(
 
 
 def plot_lines_multi_series(
-        *,
-        map_: folium.Map,
-        feature_multiseries: dict[str, list[GeoJSONFeature]],
+    *,
+    map_: folium.Map,
+    feature_multiseries: dict[str, list[GeoJSONFeature]],
 ) -> None:
     """TO DO."""
     for feature_kind, features in feature_multiseries.items():
@@ -181,12 +181,12 @@ def plot_lines_multi_series(
 
 
 def line_group(
-        *,
-        feature_kind: str,
-        features: list[GeoJSONFeature],
-        color: str,
-        weight: float,
-        dash_array: str,
+    *,
+    feature_kind: str,
+    features: list[GeoJSONFeature],
+    color: str,
+    weight: float,
+    dash_array: str,
 ) -> folium.FeatureGroup:
     """Return a group of lines as a `folium.FeatureGroup`."""
     group = folium.FeatureGroup(
@@ -213,10 +213,10 @@ def line_group(
 
 
 def plot_markers_multi_series(
-        *,
-        map_: folium.Map,
-        feature_multiseries: dict[str, list[GeoJSONFeature]],
-        name_prefix: str = "",
+    *,
+    map_: folium.Map,
+    feature_multiseries: dict[str, list[GeoJSONFeature]],
+    name_prefix: str = "",
 ) -> None:
     """TO DO."""
     for feature_kind, features in feature_multiseries.items():
@@ -239,12 +239,12 @@ def plot_markers_multi_series(
 
 
 def marker_group(
-        *,
-        feature_kind: str,
-        features: list[GeoJSONFeature],
-        name_prefix: str = "",
-        icon: str,
-        icon_color: str,
+    *,
+    feature_kind: str,
+    features: list[GeoJSONFeature],
+    name_prefix: str = "",
+    icon: str,
+    icon_color: str,
 ) -> folium.FeatureGroup:
     """Return a group of markers as a `folium.FeatureGroup`."""
     marker_group_ = folium.FeatureGroup(
