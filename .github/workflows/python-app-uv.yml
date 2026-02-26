@@ -34,6 +34,6 @@ jobs:
         # by default: exit with error if rule violations
         run: uv run ruff check --output-format=github
 
-      - name: Lint format with ruff
+      - name: Type check with ty
         # by default: exit with error if rule violations
-        run: uv run ruff format
+        run: uv run ty check --output-format=github
