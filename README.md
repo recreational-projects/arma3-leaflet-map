@@ -35,7 +35,7 @@ uv pip install .
 - Each HTML file represents a single Arma 3 map; open in a browser
 - NB: the HTML files can be large, between 10 MB and 150 MB
 
-## Screenshot
+## Screenshot (v0.1.0)
 
 ![Screenshot of Altis map](docs/screenshot.png)
 

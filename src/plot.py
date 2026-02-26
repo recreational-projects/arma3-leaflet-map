@@ -1,36 +1,70 @@
 """TO DO."""
 
-import json
+from __future__ import annotations
+
 import logging
-from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import folium
 
-from src import features_styles
-from src.arma3_map_data import Arma3MapData
+from src.features_styles import (
+    LINE_STYLES,
+    POINT_STYLES,
+    POLYGON_STYLES,
+    CircleMarkerStyle,
+    CircleStyle,
+    LineStyle,
+    MarkerStyle,
+    PolygonStyle,
+)
 from src.geo_json import feature as geo_json
 from src.plot_coordinate import PlotCoordinate
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from pathlib import Path
+
+    from src.arma3_map_data import Arma3MapData
 
 _LOGGER = logging.getLogger(__name__)
 
 
+def _duplicates(seq: Sequence[Any]) -> set[Any]:
+    """Return duplicate elements from `seq`."""
+    seen = set()
+    return {val for val in seq if (val in seen or seen.add(val))}
+
+
+def check_styles() -> None:
+    """TO DO."""
+    icon_names = [
+        style.icon_name
+        for style in POINT_STYLES.values()
+        if hasattr(style, "icon_name")
+    ]
+    duplicate_icon_names = _duplicates(icon_names)
+    if duplicate_icon_names:
+        log_msg = f"Non-unique icons: {duplicate_icon_names}"
+        _LOGGER.warning(log_msg)
+
+
 def _create_feature_group(
-    *, feature_kind: str, features: list[geo_json.Feature]
+    *, feature_kind: str, features: list[geo_json.Feature], show: bool = True
 ) -> folium.FeatureGroup:
     """Return a new empty `folium.FeatureGroup`."""
-    return folium.FeatureGroup(name=f"{feature_kind} ({len(features)})")
+    return folium.FeatureGroup(name=f"{feature_kind} ({len(features)})", show=show)
 
 
 def _marker_group(
     *,
     feature_kind: str,
     features: list[geo_json.Feature],
-    name_prefix: str = "",
-    icon_name: str = "",
-    icon_color: str = "red",
+    style: MarkerStyle | CircleMarkerStyle | CircleStyle,
 ) -> folium.FeatureGroup:
     """Return a group of markers as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(feature_kind=feature_kind, features=features)
+    feature_group = _create_feature_group(
+        feature_kind=feature_kind, features=features, show=style.show
+    )
     for f in features:
         geometry = f.geometry
         if not isinstance(geometry, geo_json.Point):
@@ -40,7 +74,7 @@ def _marker_group(
         coordinates = geometry.coordinates
         plot_coord = PlotCoordinate.from_position(coordinates)
         popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
-        tooltip_text = f"{name_prefix}-{feature_kind}"
+        tooltip_text = feature_kind
 
         if f.properties:
             name = f.properties.get("name")
@@ -51,27 +85,50 @@ def _marker_group(
         popup_text += (
             f"•&nbsp;coordinates: ({coordinates[0]:.1f}, {coordinates[1]:.1f})"
         )
-        marker_icon = folium.Icon(prefix="fa", icon=icon_name, color=icon_color)
-        folium.Marker(
-            location=plot_coord.xy,
-            popup=popup_text,
-            tooltip=tooltip_text,
-            icon=marker_icon,
-        ).add_to(feature_group)
+        if isinstance(style, CircleStyle):
+            marker = folium.Circle(
+                location=plot_coord.xy,
+                radius=style.radius,
+                stroke=False,
+                fill=True,
+                fill_color=style.color,
+                fill_opacity=style.fill_opacity,
+                popup=popup_text,
+                tooltip=tooltip_text,
+            )
+        elif isinstance(style, CircleMarkerStyle):
+            marker = folium.CircleMarker(
+                location=plot_coord.xy,
+                radius=style.radius,
+                color=style.color,
+                stroke=False,
+                fill=True,
+                fill_opacity=style.fill_opacity,
+                popup=popup_text,
+                tooltip=tooltip_text,
+            )
+        else:
+            marker_icon = folium.Icon(
+                prefix="fa", icon=style.icon_name, color=style.color
+            )
+            marker = folium.Marker(
+                location=plot_coord.xy,
+                popup=popup_text,
+                tooltip=tooltip_text,
+                icon=marker_icon,
+            )
+        marker.add_to(feature_group)
 
     return feature_group
 
 
 def _line_group(
-    *,
-    feature_kind: str,
-    features: list[geo_json.Feature],
-    color: str,
-    weight: float,
-    dash_array: str,
+    *, feature_kind: str, features: list[geo_json.Feature], style: LineStyle
 ) -> folium.FeatureGroup:
     """Return a group of lines as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(feature_kind=feature_kind, features=features)
+    feature_group = _create_feature_group(
+        feature_kind=feature_kind, features=features, show=style.show
+    )
     for f in features:
         geometry = f.geometry
         if not isinstance(geometry, geo_json.LineString):
@@ -83,9 +140,9 @@ def _line_group(
         ]
         folium.PolyLine(
             locations=[p.xy for p in plot_coords],
-            color=color,
-            weight=weight,
-            dash_array=dash_array,
+            color=style.color,
+            weight=style.weight,
+            dash_array=style.dash_array,
             tooltip=feature_kind,
         ).add_to(feature_group)  # may be unnecessary?
 
@@ -103,10 +160,12 @@ def _validate_position(position: geo_json.Position) -> geo_json.Position | None:
 
 
 def _polygon_group(
-    *, feature_kind: str, features: list[geo_json.Feature], fill_color: str
+    *, feature_kind: str, features: list[geo_json.Feature], style: PolygonStyle
 ) -> folium.FeatureGroup:
     """Return a group of polygons as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(feature_kind=feature_kind, features=features)
+    feature_group = _create_feature_group(
+        feature_kind=feature_kind, features=features, show=style.show
+    )
     for f in features:
         geometry = f.geometry
         if not isinstance(geometry, geo_json.Polygon):
@@ -122,7 +181,7 @@ def _polygon_group(
             if plot_coords:  # Don't plot polygon if no valid coords
                 folium.Polygon(
                     locations=[p.xy for p in plot_coords],
-                    fill_color=fill_color,
+                    fill_color=style.color,
                     fill=True,
                     stroke=False,
                     fill_opacity=1,
@@ -133,10 +192,12 @@ def _polygon_group(
 
 
 def _multipolygon_group(
-    *, feature_kind: str, features: list[geo_json.Feature], fill_color: str
+    *, feature_kind: str, features: list[geo_json.Feature], style: PolygonStyle
 ) -> folium.FeatureGroup:
     """Return a group of multipolygons as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(feature_kind=feature_kind, features=features)
+    feature_group = _create_feature_group(
+        feature_kind=feature_kind, features=features, show=style.show
+    )
     for f in features:
         geometry = f.geometry
         if not isinstance(geometry, geo_json.MultiPolygon):
@@ -148,7 +209,7 @@ def _multipolygon_group(
                 plot_coords = [PlotCoordinate.from_position(coord) for coord in polygon]
                 folium.Polygon(
                     locations=[p.xy for p in plot_coords],
-                    fill_color=fill_color,
+                    fill_color=style.color,
                     fill=True,
                     stroke=False,
                     fill_opacity=1,
@@ -159,7 +220,7 @@ def _multipolygon_group(
 
 
 def _image_overlay(
-    image_path: Path, map_size: int
+    *, image_path: Path, map_size: int
 ) -> folium.raster_layers.ImageOverlay | None:
     """Return image overlay."""
     if not image_path.is_file():
@@ -177,28 +238,19 @@ def _image_overlay(
 
 
 def _plot_markers_multi_series(
-    *,
-    map_: folium.Map,
-    feature_multi_series: dict[str, list[geo_json.Feature]],
-    name_prefix: str = "",
+    *, map_: folium.Map, feature_multi_series: dict[str, list[geo_json.Feature]]
 ) -> None:
     """TO DO."""
     for feature_kind, features in feature_multi_series.items():
-        icon_color = features_styles.ICON_COLORS.get(feature_kind, "gray")
-        icon_name = features_styles.ICONS.get(feature_kind, "")
-
-        if not icon_name:
-            log_msg = f"- No icon for point feature kind '{feature_kind}'."
+        style = POINT_STYLES.get(feature_kind)
+        if not style:
+            log_msg = f"- No style for point feature kind '{feature_kind}'."
             _LOGGER.error(log_msg)
-            icon_color = "red"
+            style = MarkerStyle()
 
-        _marker_group(
-            feature_kind=feature_kind,
-            features=features,
-            name_prefix=name_prefix,
-            icon_name=icon_name,
-            icon_color=icon_color,
-        ).add_to(map_)
+        _marker_group(feature_kind=feature_kind, features=features, style=style).add_to(
+            map_
+        )
 
 
 def _plot_lines_multi_series(
@@ -206,21 +258,16 @@ def _plot_lines_multi_series(
 ) -> None:
     """TO DO."""
     for feature_kind, features in feature_multi_series.items():
-        style = features_styles.LINE_STYLES.get(feature_kind, {})
-        color = style.get("color", "red")
-        dash_array = style.get("dash_array", "")
-        weight = style.get("weight", 8)
-
+        style = LINE_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style defined for line feature kind '{feature_kind}'."
             _LOGGER.error(log_msg)
+            style = LineStyle()
 
         _line_group(
             feature_kind=feature_kind,
             features=features,
-            color=color,
-            weight=weight,
-            dash_array=dash_array,
+            style=style,
         ).add_to(map_)
 
 
@@ -229,15 +276,14 @@ def _plot_polygons_multi_series(
 ) -> None:
     """TO DO."""
     for feature_kind, features in feature_multi_series.items():
-        style = features_styles.POLYGON_STYLES.get(feature_kind, {})
-        fill_color = style.get("fill_color", "red")
-
+        style = POLYGON_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style defined for polygon feature kind '{feature_kind}'."
             _LOGGER.error(log_msg)
+            style = PolygonStyle()
 
         _polygon_group(
-            feature_kind=feature_kind, features=features, fill_color=fill_color
+            feature_kind=feature_kind, features=features, style=style
         ).add_to(map_)
 
 
@@ -247,37 +293,21 @@ def _plot_multipolygons_multi_series(
     """TO DO."""
     for feature_kind, features in feature_multi_series.items():
         # for forest, features is singleton
-        style = features_styles.POLYGON_STYLES.get(feature_kind, {})
-        fill_color = style.get("fill_color", "red")
-
+        style = POLYGON_STYLES.get(feature_kind)
         if not style:
             log_msg = (
                 f"- No style defined for multipolygon feature kind '{feature_kind}'."
             )
             _LOGGER.error(log_msg)
+            style = PolygonStyle()
 
         _multipolygon_group(
-            feature_kind=feature_kind, features=features, fill_color=fill_color
+            feature_kind=feature_kind, features=features, style=style
         ).add_to(map_)
 
 
-def plot_map(data_path: Path, plot_path: Path) -> None:
-    """Plot Folium map from grad_meh output, and save."""
-    map_name = data_path.stem
-    metadata_filepath = data_path / "meta.json"
-    if not metadata_filepath.is_file():
-        log_msg = f"[bold]Map '{map_name}': no metadata, skipping.[/]"
-        _LOGGER.error(log_msg, extra={"markup": True})
-        return
-
-    metadata = json.loads(metadata_filepath.read_text())
-    preview_image_filepath = data_path / "preview.png"
-    geojson_dirpath = data_path / "geojson"
-    save_filepath = plot_path / f"{map_name}.html"
-    log_msg = f"[bold]Map '{map_name}' loading...[/]"
-    _LOGGER.info(log_msg, extra={"markup": True})
-
-    map_data = Arma3MapData.from_geo_json(geojson_dirpath)
+def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
+    """Plot Folium map and save."""
     map_ = folium.Map(
         location=(0, 0),
         zoom_start=12,
@@ -286,7 +316,9 @@ def plot_map(data_path: Path, plot_path: Path) -> None:
         # crs="Simple",  # Don't use, as it seems to use pixels for plot units.
         tiles=None,
     )
-    map_image_overlay = _image_overlay(preview_image_filepath, metadata["worldSize"])
+    map_image_overlay = _image_overlay(
+        image_path=map_data.preview_image_filepath, map_size=map_data.world_size
+    )
     if map_image_overlay:
         map_image_overlay.add_to(map_)
 
@@ -300,6 +332,7 @@ def plot_map(data_path: Path, plot_path: Path) -> None:
     _plot_lines_multi_series(map_=map_, feature_multi_series=map_data.non_road_lines)
     folium.LayerControl().add_to(map_)
 
+    save_filepath = export_path / f"{map_data.map_name}.html"
     log_msg = f"Saving map '{save_filepath}'... "
     _LOGGER.info(log_msg)
 

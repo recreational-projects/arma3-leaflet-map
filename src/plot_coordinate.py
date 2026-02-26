@@ -1,9 +1,12 @@
 """`PlotCoordinate` class."""
 
-from dataclasses import dataclass
-from typing import Self
+from __future__ import annotations
 
-from src.geo_json import feature as geo_json
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Self
+
+if TYPE_CHECKING:
+    from src.geo_json import feature as geo_json
 
 _DEGREES_LATITUDE_TO_M = 110574
 _DEGREES_LONGITUDE_TO_M = 111320
