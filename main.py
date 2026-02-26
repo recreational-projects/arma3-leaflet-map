@@ -83,7 +83,7 @@ def main() -> None:
             task = progress.add_task("Working...", total=len(dirs_to_plot))
 
             while not progress.finished:
-                for fp in dirs_to_plot:
+                for fp in sorted(dirs_to_plot):
                     plot_map(fp, PLOT_PATH)
                     progress.update(task, advance=1)
 
