@@ -1,15 +1,20 @@
 """`Arma3MapData` class."""
 
+from __future__ import annotations
+
 import gzip
+import json
 import logging
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 import msgspec
 
 from src import features_config
 from src.geo_json import feature as geo_json
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -114,8 +119,11 @@ def _load_features_from_dir(
 
 @dataclass(kw_only=True, frozen=True)
 class Arma3MapData:
-    """Container for GeoJSON data asssembled from data source."""
+    """Container for GeoJSON data assembled from data source."""
 
+    map_name: str
+    world_size: int
+    preview_image_filepath: Path
     multipolygons: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
     polygons: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
     points: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
@@ -124,27 +132,46 @@ class Arma3MapData:
     locations: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
 
     @classmethod
-    def from_geo_json(cls, path: Path) -> Self:
+    def from_geo_json(cls, path: Path) -> Self | None:
         """Compile plottables from source GeoJSON."""
+        map_name = path.stem
+        log_msg = f"[bold]Map '{map_name}' loading...[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
+        metadata_filepath = path / "meta.json"
+        if not metadata_filepath.is_file():
+            log_msg = f"[bold]Map '{map_name}': no metadata, skipping.[/]"
+            _LOGGER.error(log_msg, extra={"markup": True})
+            return None
+
+        metadata = json.loads(metadata_filepath.read_text())
+        world_size = metadata["worldSize"]
+
+        geojson_dirpath = path / "geojson"
         all_feature_descriptors = [
-            _get_feature_descriptor(fp) for fp in _geojson_gz_files_in_dir(path)
+            _get_feature_descriptor(fp)
+            for fp in _geojson_gz_files_in_dir(geojson_dirpath)
         ]
         multipolygons = _load_features_from_dir(
-            path=path,
+            path=geojson_dirpath,
             include=features_config.MULTIPOLYGON_FEATURES,
             kind="multipolygon",
         )
         polygons = _load_features_from_dir(
-            path=path, include=features_config.POLYGON_FEATURES, kind="polygon"
+            path=geojson_dirpath,
+            include=features_config.POLYGON_FEATURES,
+            kind="polygon",
         )
         points = _load_features_from_dir(
-            path=path,
+            path=geojson_dirpath,
             include=features_config.POINT_FEATURES,
             limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
             kind="point",
         )
         non_road_lines = _load_features_from_dir(
-            path=path, include=features_config.LINE_FEATURES, kind="non-road line"
+            path=geojson_dirpath,
+            include=features_config.LINE_FEATURES,
+            kind="non-road line",
         )
         ignored_feature_descriptors = (
             all_feature_descriptors
@@ -157,7 +184,7 @@ class Arma3MapData:
             log_msg = f"Ignored features: {ignored_feature_descriptors}"
             _LOGGER.warning(log_msg)
 
-        locations_path = path / "locations"
+        locations_path = geojson_dirpath / "locations"
         all_location_kinds = [
             _get_feature_descriptor(fp)
             for fp in _geojson_gz_files_in_dir(locations_path)
@@ -172,7 +199,7 @@ class Arma3MapData:
             log_msg = f"Ignored locations: {ignored_locations}"
             _LOGGER.warning(log_msg)
 
-        roads_path = path / "roads"
+        roads_path = geojson_dirpath / "roads"
         if not roads_path.is_dir():
             roads = {}
             log_msg = "- No roads source data."
@@ -191,6 +218,9 @@ class Arma3MapData:
                 _LOGGER.warning(log_msg)
 
         return cls(
+            map_name=map_name,
+            world_size=world_size,
+            preview_image_filepath=path / "preview.png",
             multipolygons=multipolygons,
             polygons=polygons,
             points=points,
