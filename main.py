@@ -43,15 +43,14 @@ def main() -> None:
     logger.info(log_msg)
 
     check_styles()
-    source_dirs = list(SOURCE_DATA_PATH.iterdir())
+    source_dirs = sorted(SOURCE_DATA_PATH.iterdir())
     PLOT_PATH.mkdir(exist_ok=True)
-    existing_plots = [fp.stem for fp in list(PLOT_PATH.iterdir())]
-    dirs_to_plot = [fp for fp in source_dirs if fp.stem not in existing_plots]
-
+    existing_plots = sorted(fp.stem for fp in list(PLOT_PATH.iterdir()))
     for map_name in existing_plots:
         log_msg = f"Map '{map_name}' already plotted - skipping."
         logger.warning(log_msg)
 
+    dirs_to_plot = [fp for fp in source_dirs if fp.stem not in existing_plots]
     log_msg = f"{len(dirs_to_plot)} maps to plot."
     logger.info(log_msg)
 
