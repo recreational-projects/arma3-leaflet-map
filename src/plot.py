@@ -333,9 +333,9 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     folium.LayerControl().add_to(map_)
 
     save_filepath = export_path / f"{map_data.map_name}.html"
-    log_msg = f"Saving map '{save_filepath}'... "
+    log_msg = f"Saving '{save_filepath}'... "
     _LOGGER.info(log_msg)
 
     map_.save(save_filepath)
-    log_msg = "...done."
-    _LOGGER.info(log_msg)
+    log_msg = f"[bold]Saved map for '{map_data.map_name}'."
+    _LOGGER.info(log_msg, extra={"markup": True})

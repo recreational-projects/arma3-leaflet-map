@@ -50,7 +50,7 @@ def _load_features_from_file(
     if limit and len(features) > limit:
         log_msg = (
             f"- Too many '{feature_descriptor}' features "
-            f"({len(features)}) - data ignored."
+            f"({len(features)} > {limit}) - data ignored."
         )
         _LOGGER.warning(log_msg)
         return []
@@ -135,7 +135,7 @@ class Arma3MapData:
     def from_geo_json(cls, path: Path) -> Self | None:
         """Compile plottables from source GeoJSON."""
         map_name = path.stem
-        log_msg = f"[bold]Map '{map_name}' loading...[/]"
+        log_msg = f"[bold]Loading data for '{map_name}'...[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
 
         metadata_filepath = path / "meta.json"
@@ -181,7 +181,7 @@ class Arma3MapData:
             - non_road_lines.keys()
         )
         if ignored_feature_descriptors:
-            log_msg = f"Ignored features: {ignored_feature_descriptors}"
+            log_msg = f"- Ignored features: {ignored_feature_descriptors}"
             _LOGGER.warning(log_msg)
 
         locations_path = geojson_dirpath / "locations"
@@ -196,7 +196,7 @@ class Arma3MapData:
         )
         ignored_locations = all_location_kinds - locations.keys()
         if ignored_locations:
-            log_msg = f"Ignored locations: {ignored_locations}"
+            log_msg = f"- Ignored locations: {ignored_locations}"
             _LOGGER.warning(log_msg)
 
         roads_path = geojson_dirpath / "roads"
@@ -214,7 +214,7 @@ class Arma3MapData:
             )
             ignored_roads = all_roads - roads.keys()
             if ignored_roads:
-                log_msg = f"Ignored roads: {ignored_roads}"
+                log_msg = f"- Ignored roads: {ignored_roads}"
                 _LOGGER.warning(log_msg)
 
         return cls(
