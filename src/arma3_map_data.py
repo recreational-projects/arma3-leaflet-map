@@ -9,63 +9,15 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
 
 import msgspec
+from arma3_offline_map_lib import geojson
 
 from src import features_config
-from src.geo_json import feature as geo_json
 
 if TYPE_CHECKING:
     from pathlib import Path
 
+
 _LOGGER = logging.getLogger(__name__)
-
-
-def _geojson_gz_files_in_dir(path: Path) -> list[Path]:
-    """Return a list of `.geojson.gz` files in a directory."""
-    return [p for p in list(path.iterdir()) if p.suffixes == [".geojson", ".gz"]]
-
-
-def _get_feature_descriptor(path: Path) -> str:
-    """Return the feature descriptor for a `.geojson.gz` file."""
-    return path.stem.removesuffix(".geojson")
-
-
-def _load_features_from_file(
-    *, path: Path, limit: int | None = None
-) -> list[geo_json.Feature]:
-    """
-    Load features from a `.geojson.gz` file.
-
-    NB: grad_meh source files are gzipped JSON arrays of GeoJSON features, not GeoJSON
-    compliant files.
-    """
-    with gzip.open(path, "rt", encoding="utf-8") as file:
-        features = msgspec.json.decode(file.read(), type=list[geo_json.Feature])
-
-    feature_descriptor = _get_feature_descriptor(path)
-    if features is None:
-        log_msg = f"- No valid features in `{path.name}`."
-        _LOGGER.warning(log_msg)
-        return []
-
-    if limit and len(features) > limit:
-        log_msg = (
-            f"- Too many '{feature_descriptor}' features "
-            f"({len(features)} > {limit}) - data ignored."
-        )
-        _LOGGER.warning(log_msg)
-        return []
-
-    return features
-
-
-def _summarise_features(features: dict[str, list[geo_json.Feature]]) -> str:
-    """Return a string summarizing features data."""
-    if not features:
-        return "None"
-    texts = [
-        f"{len(features)} {feature_kind}" for feature_kind, features in features.items()
-    ]
-    return ", ".join(texts)
 
 
 def _load_features_from_dir(
@@ -75,7 +27,7 @@ def _load_features_from_dir(
     exclude: list[str] | None = None,
     limit: int | None = None,
     kind: str,
-) -> dict[str, list[geo_json.Feature]]:
+) -> dict[str, list[geojson.Feature]]:
     """
     Load features from `.geojson.gz` files in a directory.
 
@@ -84,7 +36,7 @@ def _load_features_from_dir(
          `path/{FILENAME_STEM}.geojson.gz`.
 
     """
-    features: dict[str, list[geo_json.Feature]] = {}
+    features: dict[str, list[geojson.Feature]] = {}
     if include and exclude:
         err_msg = "`include` and `exclude` cannot both be used."
         raise RuntimeError(err_msg)
@@ -117,6 +69,55 @@ def _load_features_from_dir(
     return features
 
 
+def _geojson_gz_files_in_dir(path: Path) -> list[Path]:
+    """Return a list of `.geojson.gz` files in a directory."""
+    return [p for p in list(path.iterdir()) if p.suffixes == [".geojson", ".gz"]]
+
+
+def _load_features_from_file(
+    *, path: Path, limit: int | None = None
+) -> list[geojson.Feature]:
+    """
+    Load features from a `.geojson.gz` file.
+
+    NB: grad_meh source files are gzipped JSON arrays of GeoJSON features, not GeoJSON
+    compliant files.
+    """
+    with gzip.open(path, "rt", encoding="utf-8") as file:
+        features = msgspec.json.decode(file.read(), type=list[geojson.Feature])
+
+    feature_descriptor = _get_feature_descriptor(path)
+    if features is None:
+        log_msg = f"- No valid features in `{path.name}`."
+        _LOGGER.warning(log_msg)
+        return []
+
+    if limit and len(features) > limit:
+        log_msg = (
+            f"- Too many '{feature_descriptor}' features "
+            f"({len(features)} > {limit}) - data ignored."
+        )
+        _LOGGER.warning(log_msg)
+        return []
+
+    return features
+
+
+def _get_feature_descriptor(path: Path) -> str:
+    """Return the feature descriptor for a `.geojson.gz` file."""
+    return path.stem.removesuffix(".geojson")
+
+
+def _summarise_features(features: dict[str, list[geojson.Feature]]) -> str:
+    """Return a string summarizing features data."""
+    if not features:
+        return "None"
+    texts = [
+        f"{len(features)} {feature_kind}" for feature_kind, features in features.items()
+    ]
+    return ", ".join(texts)
+
+
 @dataclass(kw_only=True, frozen=True)
 class Arma3MapData:
     """Container for GeoJSON data assembled from data source."""
@@ -124,12 +125,12 @@ class Arma3MapData:
     map_name: str
     world_size: int
     preview_image_filepath: Path
-    multipolygons: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
-    polygons: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
-    points: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
-    non_road_lines: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
-    roads: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
-    locations: dict[str, list[geo_json.Feature]] = field(default_factory=dict)
+    multipolygons: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    polygons: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    points: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    non_road_lines: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    roads: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
 
     @classmethod
     def from_geo_json(cls, path: Path) -> Self | None:
