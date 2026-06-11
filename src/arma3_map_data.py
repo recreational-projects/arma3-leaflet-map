@@ -12,8 +12,10 @@ import msgspec
 from arma3_offline_map_lib import geojson
 
 from src import features_config
+from src.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
+    from collections.abc import Container
     from pathlib import Path
 
 
@@ -23,8 +25,8 @@ _LOGGER = logging.getLogger(__name__)
 def _load_features_from_dir(
     *,
     path: Path,
-    include: list[str] | None = None,
-    exclude: list[str] | None = None,
+    include: Container[str] | None = None,
+    exclude: Container[str] | None = None,
     limit: int | None = None,
     kind: str,
 ) -> dict[str, list[geojson.Feature]]:
@@ -87,7 +89,7 @@ def _load_features_from_file(
         features = msgspec.json.decode(file.read(), type=list[geojson.Feature])
 
     feature_descriptor = _get_feature_descriptor(path)
-    if features is None:
+    if not features:
         log_msg = f"- No valid features in `{path.name}`."
         _LOGGER.warning(log_msg)
         return []
@@ -112,10 +114,11 @@ def _summarise_features(features: dict[str, list[geojson.Feature]]) -> str:
     """Return a string summarizing features data."""
     if not features:
         return "None"
+
     texts = [
         f"{len(features)} {feature_kind}" for feature_kind, features in features.items()
     ]
-    return ", ".join(texts)
+    return format_iterable_of_str(texts)
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -182,7 +185,10 @@ class Arma3MapData:
             - non_road_lines.keys()
         )
         if ignored_feature_descriptors:
-            log_msg = f"- Ignored features: {ignored_feature_descriptors}"
+            log_msg = (
+                f"- Ignored features: "
+                f"{format_iterable_of_str(ignored_feature_descriptors)}"
+            )
             _LOGGER.warning(log_msg)
 
         locations_path = geojson_dirpath / "locations"
@@ -197,7 +203,9 @@ class Arma3MapData:
         )
         ignored_locations = all_location_kinds - locations.keys()
         if ignored_locations:
-            log_msg = f"- Ignored locations: {ignored_locations}"
+            log_msg = (
+                f"- Ignored locations: {format_iterable_of_str(ignored_locations)}"
+            )
             _LOGGER.warning(log_msg)
 
         roads_path = geojson_dirpath / "roads"
@@ -215,7 +223,7 @@ class Arma3MapData:
             )
             ignored_roads = all_roads - roads.keys()
             if ignored_roads:
-                log_msg = f"- Ignored roads: {ignored_roads}"
+                log_msg = f"- Ignored roads: {format_iterable_of_str(ignored_roads)}"
                 _LOGGER.warning(log_msg)
 
         return cls(

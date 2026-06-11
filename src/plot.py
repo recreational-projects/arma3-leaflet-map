@@ -19,6 +19,7 @@ from src.features_styles import (
     PolygonStyle,
 )
 from src.plot_coordinate import PlotCoordinate
+from src.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -38,7 +39,7 @@ def check_styles() -> None:
     ]
     duplicate_icon_names = _duplicates(icon_names)
     if duplicate_icon_names:
-        log_msg = f"Non-unique icons: {duplicate_icon_names}"
+        log_msg = f"Non-unique icons: {format_iterable_of_str(duplicate_icon_names)}"
         _LOGGER.warning(log_msg)
 
 
