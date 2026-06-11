@@ -104,10 +104,7 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "watertower": MarkerStyle(color="gray", icon_name="droplet"),
     "busstop": MarkerStyle(color="gray", icon_name="bus-simple"),
     # settlements:
-    "namecitycapital": MarkerStyle(color="darkpurple", icon_name="landmark-flag"),
-    "namecity": MarkerStyle(color="darkpurple", icon_name="city"),
     "citycenter": MarkerStyle(color="darkpurple", icon_name="arrows-to-dot"),
-    "namevillage": MarkerStyle(color="darkpurple", icon_name="building"),
     # physical:
     "hill": MarkerStyle(color="beige", icon_name="mound"),
     "rockarea": MarkerStyle(color="beige", icon_name="hill-rockslide"),
@@ -122,15 +119,21 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "tourism": MarkerStyle(),
     "viewpoint": MarkerStyle(icon_name="eye"),
     "shipwreck": MarkerStyle(color="blue", icon_name="skull-crossbones"),
-    # minor place labels:
-    "namemarine": CircleMarkerStyle(color="cyan"),
-    "namewaterlocal": CircleMarkerStyle(color="dodgerblue"),
-    "namelocal": CircleMarkerStyle(color="orange"),
     # other plotted as CircleMarker:
     "mounts": CircleMarkerStyle(color="beige", radius=7, show=False),
     "rock": CircleMarkerStyle(color="black", radius=3, show=False),
 }
-
+TEXT_STYLES = {
+    "airport": True,
+    "citycenter": True,  # not named?
+    "hill": True,  # rarely named, e.g. 'enoch'
+    "namecity": True,
+    "namecitycapital": True,
+    "namelocal": True,
+    "namemarine": True,
+    "namevillage": True,
+    "namewaterlocal": True,
+}
 LINE_STYLES: dict[str, LineStyle] = {
     "main_road": LineStyle(color="orange", weight=4),
     "road": LineStyle(color="yellow", weight=2),
@@ -141,8 +144,6 @@ LINE_STYLES: dict[str, LineStyle] = {
     "railway": LineStyle(color="black", weight=2),
     "highway": LineStyle(color="red", weight=6),  # xcam_taunus
 }
-
-
 POLYGON_STYLES: dict[str, PolygonStyle] = {
     "forest": PolygonStyle(color="green", show=False),
     "house": PolygonStyle(color="gray"),
