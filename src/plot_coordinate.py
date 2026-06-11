@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
 if TYPE_CHECKING:
-    from src.geo_json import feature as geo_json
+    from arma3_offline_map_lib import geojson
 
 _DEGREES_LATITUDE_TO_M = 110574
 _DEGREES_LONGITUDE_TO_M = 111320
@@ -25,7 +25,7 @@ class PlotCoordinate:
         return self.x, self.y
 
     @classmethod
-    def from_position(cls, position: geo_json.Position) -> Self:
+    def from_position(cls, position: geojson.Position) -> Self:
         """Ignores any z. Note axis order switch."""
         x = position[1]
         y = position[0]

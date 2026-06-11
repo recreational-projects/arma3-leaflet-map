@@ -4,9 +4,13 @@ version = "0.2.0"
 description = "Leaflet interactive maps for Arma 3"
 requires-python = ">=3.12"
 dependencies = [
+    "arma3-offline-map-lib",
     "folium>=0.20.0",
     "msgspec>=0.21.1",
     "rich>=15.0.0",
+]
+extend-safe-fixes = [
+    "TC", # flake8-type-checking
 ]
 
 [dependency-groups]
@@ -27,3 +31,9 @@ ignore = [
     "ERA001",  # commented-out-code
     "D105",  # undocumented-magic-method
 ]
+extend-safe-fixes = [
+    "TC", # flake8-type-checking
+]
+
+[tool.uv.sources]
+arma3-offline-map-lib = { git = "https://github.com/recreational-projects/arma3-offline-map-lib.git", rev = "v0.3.0" }
