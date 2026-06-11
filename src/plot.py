@@ -51,9 +51,12 @@ def _duplicates(seq: Sequence[Any]) -> set[Any]:
 
 def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     """Plot Folium map and save."""
+    _centre = PlotCoordinate.from_position(
+        (map_data.world_size / 2, map_data.world_size / 2)
+    )
     map_ = folium.Map(
-        location=(0, 0),
-        zoom_start=12,
+        location=_centre.xy,
+        zoom_start=13,
         control_scale=True,  # Show a scale on the bottom of the map.
         prefer_canvas=True,  # for vector layers instead of SVG
         # crs="Simple",  # Don't use, as it seems to use pixels for plot units.
