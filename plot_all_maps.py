@@ -1,14 +1,12 @@
 """
-TO DO.
+Plot multiple maps.
 
 NB: the source *.geojson.gz files are gzipped JSON arrays of GeoJSON features, not
 GeoJSON compliant files.
 """
 
 import logging
-from pathlib import Path
 
-from rich.logging import RichHandler
 from rich.progress import (
     BarColumn,
     MofNCompleteColumn,
@@ -18,26 +16,17 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
+from _setup import PLOT_PATH, SOURCE_DATA_PATH, setup_logging
 from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
 from src.plot import check_styles, plot_map
 
-INPUT_DATA_RELATIVE_DIR = "../gruppe-adler/meh-data/"
-OUTPUT_RELATIVE_DIR = "maps"
 LOG_LEVEL = "INFO"
-
-
-_LOG_FORMAT = "%(message)s"
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format=_LOG_FORMAT,
-    datefmt="[%X]",
-    handlers=[RichHandler()],
-)
 
 
 def main() -> None:
     """Application entry point."""
+    setup_logging(LOG_LEVEL)
     logger = logging.getLogger("rich")
     log_msg = f"IGNORED_FEATURE_KIND_THRESHOLD = {IGNORED_FEATURE_KIND_THRESHOLD}"
     logger.info(log_msg)
@@ -79,7 +68,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    BASE_PATH = Path(__file__).resolve().parent
-    SOURCE_DATA_PATH = BASE_PATH / INPUT_DATA_RELATIVE_DIR
-    PLOT_PATH = BASE_PATH / OUTPUT_RELATIVE_DIR
     main()
