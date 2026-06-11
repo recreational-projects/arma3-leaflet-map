@@ -7,11 +7,13 @@ from typing import TYPE_CHECKING, Any
 
 import folium
 from arma3_offline_map_lib import geojson
+from folium import DivIcon
 
 from src.features_styles import (
     LINE_STYLES,
     POINT_STYLES,
     POLYGON_STYLES,
+    TEXT_STYLES,
     CircleMarkerStyle,
     CircleStyle,
     LineStyle,
@@ -22,7 +24,7 @@ from src.plot_coordinate import PlotCoordinate
 from src.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Sequence, Sized
     from pathlib import Path
 
     from src.arma3_map_data import Arma3MapData
@@ -68,14 +70,14 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     if map_image_overlay:
         map_image_overlay.add_to(map_)
 
-    _plot_multipolygons_multi_series(
-        map_=map_, feature_multi_series=map_data.multipolygons
+    _plot_multipolygon_multi_series(
+        map_=map_, multi_series=map_data.multipolygon_features
     )
-    _plot_polygons_multi_series(map_=map_, feature_multi_series=map_data.polygons)
-    _plot_markers_multi_series(map_=map_, feature_multi_series=map_data.points)
-    _plot_markers_multi_series(map_=map_, feature_multi_series=map_data.locations)
-    _plot_lines_multi_series(map_=map_, feature_multi_series=map_data.roads)
-    _plot_lines_multi_series(map_=map_, feature_multi_series=map_data.non_road_lines)
+    _plot_polygon_multi_series(map_=map_, multi_series=map_data.polygon_features)
+    _plot_marker_multi_series(map_=map_, multi_series=map_data.point_features)
+    _plot_line_multi_series(map_=map_, multi_series=map_data.roads)
+    _plot_line_multi_series(map_=map_, multi_series=map_data.line_features)
+    _plot_div_icon_multi_series(map_=map_, multi_series=map_data.locations)
     folium.LayerControl().add_to(map_)
 
     save_filepath = export_path / f"{map_data.map_name}.html"
@@ -105,43 +107,42 @@ def _image_overlay(
     )
 
 
-def _plot_multipolygons_multi_series(
-    *, map_: folium.Map, feature_multi_series: dict[str, list[geojson.Feature]]
+def _plot_multipolygon_multi_series(
+    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
 ) -> None:
     """TO DO."""
-    for feature_kind, features in feature_multi_series.items():
+    for feature_kind, features in multi_series.items():
         # for forest, features is singleton
         style = POLYGON_STYLES.get(feature_kind)
         if not style:
-            log_msg = (
-                f"- No style defined for multipolygon feature kind '{feature_kind}'."
-            )
+            log_msg = f"- No style in POLYGON_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
             style = PolygonStyle()
 
-        _multipolygon_group(
+        _multi_polygon_group(
             feature_kind=feature_kind, features=features, style=style
         ).add_to(map_)
 
 
-def _multipolygon_group(
+def _multi_polygon_group(
     *, feature_kind: str, features: list[geojson.Feature], style: PolygonStyle
 ) -> folium.FeatureGroup:
-    """Return a group of multipolygons as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(
+    """Return a group of multipolygons as a `folium.FeatureGroup` of `MultiPolygon`s."""
+    feature_group = _create_empty_feature_group(
         feature_kind=feature_kind, features=features, show=style.show
     )
     for f in features:
-        geometry = f.geometry
-        if not isinstance(geometry, geojson.MultiPolygon):
+        if not isinstance(f.geometry, geojson.MultiPolygon):
             err_msg = "Unexpected non-`MultiPolygon`."
             raise TypeError(err_msg)
 
-        for multipolygon in geometry.coordinates:
+        for multipolygon in f.geometry.coordinates:
             for polygon in multipolygon:
-                plot_coords = [PlotCoordinate.from_position(coord) for coord in polygon]
+                _plot_coords = [
+                    PlotCoordinate.from_position(coord) for coord in polygon
+                ]
                 folium.Polygon(
-                    locations=[p.xy for p in plot_coords],
+                    locations=[p.xy for p in _plot_coords],
                     fill_color=style.color,
                     fill=True,
                     stroke=False,
@@ -152,11 +153,11 @@ def _multipolygon_group(
     return feature_group
 
 
-def _plot_polygons_multi_series(
-    *, map_: folium.Map, feature_multi_series: dict[str, list[geojson.Feature]]
+def _plot_polygon_multi_series(
+    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
 ) -> None:
     """TO DO."""
-    for feature_kind, features in feature_multi_series.items():
+    for feature_kind, features in multi_series.items():
         style = POLYGON_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style defined for polygon feature kind '{feature_kind}'."
@@ -171,25 +172,24 @@ def _plot_polygons_multi_series(
 def _polygon_group(
     *, feature_kind: str, features: list[geojson.Feature], style: PolygonStyle
 ) -> folium.FeatureGroup:
-    """Return a group of polygons as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(
+    """Return a group of polygons as a `folium.FeatureGroup` of `folium.Polygon`s."""
+    feature_group = _create_empty_feature_group(
         feature_kind=feature_kind, features=features, show=style.show
     )
     for f in features:
-        geometry = f.geometry
-        if not isinstance(geometry, geojson.Polygon):
+        if not isinstance(f.geometry, geojson.Polygon):
             err_msg = "Unexpected non-`Polygon`."
             raise TypeError(err_msg)
 
-        for polygon in geometry.coordinates:
-            plot_coords = [
+        for polygon in f.geometry.coordinates:
+            _plot_coords = [
                 PlotCoordinate.from_position(position)
                 for position in polygon
                 if _validate_position(position)
             ]
-            if plot_coords:  # Don't plot polygon if no valid coords
+            if _plot_coords:  # Don't plot polygon if no valid coords
                 folium.Polygon(
-                    locations=[p.xy for p in plot_coords],
+                    locations=[p.xy for p in _plot_coords],
                     fill_color=style.color,
                     fill=True,
                     stroke=False,
@@ -210,14 +210,14 @@ def _validate_position(position: geojson.Position) -> geojson.Position | None:
     return position
 
 
-def _plot_markers_multi_series(
-    *, map_: folium.Map, feature_multi_series: dict[str, list[geojson.Feature]]
+def _plot_marker_multi_series(
+    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
 ) -> None:
     """TO DO."""
-    for feature_kind, features in feature_multi_series.items():
+    for feature_kind, features in multi_series.items():
         style = POINT_STYLES.get(feature_kind)
         if not style:
-            log_msg = f"- No style for point feature kind '{feature_kind}'."
+            log_msg = f"- No style in POINT_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
             style = MarkerStyle()
 
@@ -233,102 +233,150 @@ def _marker_group(
     style: MarkerStyle | CircleMarkerStyle | CircleStyle,
 ) -> folium.FeatureGroup:
     """Return a group of markers as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(
+    feature_group = _create_empty_feature_group(
         feature_kind=feature_kind, features=features, show=style.show
     )
     for f in features:
-        geometry = f.geometry
-        if not isinstance(geometry, geojson.Point):
+        if not isinstance(f.geometry, geojson.Point):
             err_msg = "Unexpected non-`Point`."
             raise TypeError(err_msg)
 
-        coordinates = geometry.coordinates
-        plot_coord = PlotCoordinate.from_position(coordinates)
-        popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
-        tooltip_text = feature_kind
+        _coords = f.geometry.coordinates
+        _plot_coords = PlotCoordinate.from_position(_coords)
+        _popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
+        _tooltip_text = feature_kind
 
         if f.properties:
-            name = f.properties.get("name")
+            name = f.properties.get("name", "NO_NAME")
             if name:
-                popup_text += f"•&nbsp;name: '{name}'<br>"
-                tooltip_text += f": '{name}'"
+                _popup_text += f"•&nbsp;name: '{name}'<br>"
+                _tooltip_text += f": '{name}'"
 
-        popup_text += (
-            f"•&nbsp;coordinates: ({coordinates[0]:.1f}, {coordinates[1]:.1f})"
-        )
+        _popup_text += f"•&nbsp;coordinates: ({_coords[0]:.1f}, {_coords[1]:.1f})"
         if isinstance(style, CircleStyle):
             marker = folium.Circle(
-                location=plot_coord.xy,
+                location=_plot_coords.xy,
                 radius=style.radius,
                 stroke=False,
                 fill=True,
                 fill_color=style.color,
                 fill_opacity=style.fill_opacity,
-                popup=popup_text,
-                tooltip=tooltip_text,
+                popup=_popup_text,
+                tooltip=_tooltip_text,
             )
         elif isinstance(style, CircleMarkerStyle):
             marker = folium.CircleMarker(
-                location=plot_coord.xy,
+                location=_plot_coords.xy,
                 radius=style.radius,
                 color=style.color,
                 stroke=False,
                 fill=True,
                 fill_opacity=style.fill_opacity,
-                popup=popup_text,
-                tooltip=tooltip_text,
+                popup=_popup_text,
+                tooltip=_tooltip_text,
             )
         else:
-            marker_icon = folium.Icon(
+            _marker_icon = folium.Icon(
                 prefix="fa", icon=style.icon_name, color=style.color
             )
             marker = folium.Marker(
-                location=plot_coord.xy,
-                popup=popup_text,
-                tooltip=tooltip_text,
-                icon=marker_icon,
+                location=_plot_coords.xy,
+                popup=_popup_text,
+                tooltip=_tooltip_text,
+                icon=_marker_icon,
             )
+
         marker.add_to(feature_group)
 
     return feature_group
 
 
-def _plot_lines_multi_series(
-    *, map_: folium.Map, feature_multi_series: dict[str, list[geojson.Feature]]
+def _plot_div_icon_multi_series(
+    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
 ) -> None:
     """TO DO."""
-    for feature_kind, features in feature_multi_series.items():
+    for feature_kind, features in multi_series.items():
+        style = TEXT_STYLES.get(feature_kind)
+        if not style:
+            log_msg = f"- No style in TEXT_STYLES for '{feature_kind}'."
+            _LOGGER.error(log_msg)
+
+        _text_marker_group(feature_kind=feature_kind, features=features).add_to(map_)
+
+
+def _text_marker_group(
+    *,
+    feature_kind: str,
+    features: list[geojson.Feature],
+) -> folium.FeatureGroup:
+    """Return a group of markers as a `folium.FeatureGroup`."""
+    feature_group = _create_empty_feature_group(
+        feature_kind=feature_kind, features=features, show=True
+    )
+    for f in features:
+        if not isinstance(f.geometry, geojson.Point):
+            err_msg = "Unexpected non-`Point`."
+            raise TypeError(err_msg)
+
+        _coords = f.geometry.coordinates
+        _plot_coords = PlotCoordinate.from_position(_coords)
+        _popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
+        _tooltip_text = feature_kind
+        _non_breaking_name = ""
+
+        if f.properties:
+            name = f.properties.get("name", "NO_NAME")
+            if name:
+                _popup_text += f"•&nbsp;name: '{name}'<br>"
+                _tooltip_text += f": '{name}'"
+                _non_breaking_name = name.replace(" ", "&nbsp;")
+
+        _popup_text += f"•&nbsp;coordinates: ({_coords[0]:.1f}, {_coords[1]:.1f})"
+        _html = f"{_non_breaking_name}"
+        marker = folium.Marker(
+            location=_plot_coords.xy,
+            popup=_popup_text,
+            tooltip=_tooltip_text,
+            icon=DivIcon(html=_html),
+        )
+        marker.add_to(feature_group)
+
+    return feature_group
+
+
+def _plot_line_multi_series(
+    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+) -> None:
+    """TO DO."""
+    for feature_kind, features in multi_series.items():
         style = LINE_STYLES.get(feature_kind)
         if not style:
-            log_msg = f"- No style defined for line feature kind '{feature_kind}'."
+            log_msg = f"- No style in LINE_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
             style = LineStyle()
 
-        _line_group(
-            feature_kind=feature_kind,
-            features=features,
-            style=style,
+        _poly_line_group(
+            feature_kind=feature_kind, features=features, style=style
         ).add_to(map_)
 
 
-def _line_group(
+def _poly_line_group(
     *, feature_kind: str, features: list[geojson.Feature], style: LineStyle
 ) -> folium.FeatureGroup:
-    """Return a group of lines as a `folium.FeatureGroup`."""
-    feature_group = _create_feature_group(
+    """Return a group of lines as a `folium.FeatureGroup` of `folium.PolyLine`s."""
+    feature_group = _create_empty_feature_group(
         feature_kind=feature_kind, features=features, show=style.show
     )
     for f in features:
-        geometry = f.geometry
-        if not isinstance(geometry, geojson.LineString):
+        if not isinstance(f.geometry, geojson.LineString):
             err_msg = "Unexpected non-`LineString`."
             raise TypeError(err_msg)
 
-        plot_coords = [
-            PlotCoordinate.from_position(coord) for coord in geometry.coordinates
+        _plot_coords = [
+            PlotCoordinate.from_position(coord) for coord in f.geometry.coordinates
         ]
         folium.PolyLine(
-            locations=[p.xy for p in plot_coords],
+            locations=[p.xy for p in _plot_coords],
             color=style.color,
             weight=style.weight,
             dash_array=style.dash_array,
@@ -338,8 +386,8 @@ def _line_group(
     return feature_group
 
 
-def _create_feature_group(
-    *, feature_kind: str, features: list[geojson.Feature], show: bool = True
+def _create_empty_feature_group(
+    *, feature_kind: str, features: Sized, show: bool = True
 ) -> folium.FeatureGroup:
     """Return a new empty `folium.FeatureGroup`."""
     return folium.FeatureGroup(name=f"{feature_kind} ({len(features)})", show=show)

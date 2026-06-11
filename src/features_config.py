@@ -4,7 +4,7 @@ IGNORED_FEATURE_KIND_THRESHOLD = 1000
 """NB: Used to ignore feature kinds with too many members which would
 affect performance."""
 
-POINT_FEATURES = {
+MARKER_FEATURES = {
     # GeoJSON `Point`s from 'geojson' root dir, to be plotted as markers:
     "bush",
     "busstop",
@@ -32,7 +32,7 @@ POINT_FEATURES = {
     "view-tower",
     "watertower",
 }
-LINE_FEATURES = {
+POLY_LINE_FEATURES = {
     # GeoJSON `LineString`s from 'geojson' root dir, to be plotted as polylines:
     "powerline",
     "railway",

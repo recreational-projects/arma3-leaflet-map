@@ -128,10 +128,12 @@ class Arma3MapData:
     map_name: str
     world_size: int
     preview_image_filepath: Path
-    multipolygons: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    polygons: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    points: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    non_road_lines: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    multipolygon_features: dict[str, list[geojson.Feature]] = field(
+        default_factory=dict
+    )
+    polygon_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    point_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    line_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     roads: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
 
@@ -168,13 +170,13 @@ class Arma3MapData:
         )
         points = _load_features_from_dir(
             path=geojson_dirpath,
-            include=features_config.POINT_FEATURES,
+            include=features_config.MARKER_FEATURES,
             limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
             kind="point",
         )
         non_road_lines = _load_features_from_dir(
             path=geojson_dirpath,
-            include=features_config.LINE_FEATURES,
+            include=features_config.POLY_LINE_FEATURES,
             kind="non-road line",
         )
         ignored_feature_descriptors = (
@@ -230,10 +232,10 @@ class Arma3MapData:
             map_name=map_name,
             world_size=world_size,
             preview_image_filepath=path / "preview.png",
-            multipolygons=multipolygons,
-            polygons=polygons,
-            points=points,
-            non_road_lines=non_road_lines,
+            multipolygon_features=multipolygons,
+            polygon_features=polygons,
+            point_features=points,
+            line_features=non_road_lines,
             roads=roads,
             locations=locations,
         )
