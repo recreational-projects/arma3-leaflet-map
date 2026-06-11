@@ -9,6 +9,8 @@ to produce the maps in Python.
 A folder containing maps data exported with
 [Gruppe Adler Map Exporter](https://github.com/gruppe-adler/grad_meh) ('grad_meh').
 
+This document assumes `uv` is installed, but not required.
+
 ## Installation
 
 Clone the repo, e.g.:
@@ -18,20 +20,19 @@ git clone https://github.com/recreational-projects/arma3-leaflet-map
 ```
 Create a Python environment and install the dependencies, e.g:
 ```shell
-pip install .
-````
-
-or if you have uv installed:
-```shell
 uv pip install .
 ```
 
 ## Usage
-- Edit `main.py` so that:
+- Edit `_setup.py` so that:
   - `INPUT_DATA_RELATIVE_DIR` points to the folder containing
     the grad_meh maps data
-  - `OUTPUT_DIR` points to the folder where the maps should be saved
-- Run `main.py` and note log messages
+  - `OUTPUT_RELATIVE_DIR` points to the folder where the maps should be saved
+- To plot a single map:
+  - Edit `plot_map.py` so that `MAP_NAME` points to the required map
+  - Run `plot_map.py`
+- To plot all maps:
+  - Run `plot_all_maps.py`
 - Each HTML file represents a single Arma 3 map; open in a browser
 - NB: the HTML files can be large, between 10 MB and 150 MB
 
