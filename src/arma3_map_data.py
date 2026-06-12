@@ -127,7 +127,7 @@ class Arma3MapData:
 
     map_name: str
     world_size: int
-    preview_image_filepath: Path
+    preview_image_filepath: Path | None
     multipolygon_features: dict[str, list[geojson.Feature]] = field(
         default_factory=dict
     )
@@ -138,44 +138,46 @@ class Arma3MapData:
     locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
 
     @classmethod
-    def from_geo_json(cls, path: Path) -> Self | None:
-        """Compile plottables from source GeoJSON."""
-        map_name = path.stem
-        log_msg = f"[bold]Loading data for '{map_name}'...[/]"
-        _LOGGER.info(log_msg, extra={"markup": True})
-
-        metadata_filepath = path / "meta.json"
-        if not metadata_filepath.is_file():
-            log_msg = f"[bold]Map '{map_name}': no metadata, skipping.[/]"
+    def from_data(cls, path: Path) -> Self | None:
+        """Compile from source GeoJSON."""
+        if not path.is_dir():
+            log_msg = f"Can't find '{path}'; skipping.[/]"
             _LOGGER.error(log_msg, extra={"markup": True})
             return None
 
-        metadata = json.loads(metadata_filepath.read_text())
-        world_size = metadata["worldSize"]
+        log_msg = f"[bold]Loading data from '{path}'...[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
 
-        geojson_dirpath = path / "geojson"
+        metadata_ = json.loads((path / "meta.json").read_text())
+        preview_image_filepath_ = path / "preview.png"
+        if not preview_image_filepath_.is_file():
+            log_msg = f"Couldn't find preview image '{preview_image_filepath_}'."
+            _LOGGER.warning(log_msg)
+            preview_image_filepath_ = None
+
+        geojson_dirpath_ = path / "geojson"
         all_feature_descriptors = [
             _get_feature_descriptor(fp)
-            for fp in _geojson_gz_files_in_dir(geojson_dirpath)
+            for fp in _geojson_gz_files_in_dir(geojson_dirpath_)
         ]
         multipolygons = _load_features_from_dir(
-            path=geojson_dirpath,
+            path=geojson_dirpath_,
             include=features_config.MULTIPOLYGON_FEATURES,
             kind="multipolygon",
         )
         polygons = _load_features_from_dir(
-            path=geojson_dirpath,
+            path=geojson_dirpath_,
             include=features_config.POLYGON_FEATURES,
             kind="polygon",
         )
         points = _load_features_from_dir(
-            path=geojson_dirpath,
+            path=geojson_dirpath_,
             include=features_config.MARKER_FEATURES,
             limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
             kind="point",
         )
         non_road_lines = _load_features_from_dir(
-            path=geojson_dirpath,
+            path=geojson_dirpath_,
             include=features_config.POLY_LINE_FEATURES,
             kind="non-road line",
         )
@@ -193,7 +195,7 @@ class Arma3MapData:
             )
             _LOGGER.warning(log_msg)
 
-        locations_path = geojson_dirpath / "locations"
+        locations_path = geojson_dirpath_ / "locations"
         all_location_kinds = [
             _get_feature_descriptor(fp)
             for fp in _geojson_gz_files_in_dir(locations_path)
@@ -210,7 +212,7 @@ class Arma3MapData:
             )
             _LOGGER.warning(log_msg)
 
-        roads_path = geojson_dirpath / "roads"
+        roads_path = geojson_dirpath_ / "roads"
         if not roads_path.is_dir():
             roads = {}
             log_msg = "- No roads source data."
@@ -229,9 +231,9 @@ class Arma3MapData:
                 _LOGGER.warning(log_msg)
 
         return cls(
-            map_name=map_name,
-            world_size=world_size,
-            preview_image_filepath=path / "preview.png",
+            map_name=metadata_["worldName"],
+            world_size=metadata_["worldSize"],
+            preview_image_filepath=preview_image_filepath_,
             multipolygon_features=multipolygons,
             polygon_features=polygons,
             point_features=points,

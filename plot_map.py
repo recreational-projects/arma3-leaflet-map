@@ -25,7 +25,7 @@ def main() -> None:
 
     check_styles()
     PLOT_PATH.mkdir(exist_ok=True)
-    map_data = Arma3MapData.from_geo_json(SOURCE_DATA_PATH / MAP_NAME)
+    map_data = Arma3MapData.from_data(SOURCE_DATA_PATH / MAP_NAME)
     if map_data:
         plot_map(map_data=map_data, export_path=PLOT_PATH)
 

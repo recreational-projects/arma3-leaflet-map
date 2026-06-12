@@ -60,7 +60,7 @@ def main() -> None:
 
             while not progress.finished:
                 for fp in sorted(dirs_to_plot):
-                    map_data = Arma3MapData.from_geo_json(fp)
+                    map_data = Arma3MapData.from_data(fp)
                     if map_data:
                         plot_map(map_data=map_data, export_path=PLOT_PATH)
 
