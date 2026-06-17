@@ -15,7 +15,7 @@ extend-safe-fixes = [
 
 [dependency-groups]
 dev = [
-    "ruff>=0.15.16",
+    "ruff>=0.15.17",
     "ty>=0.0.48",
 ]
 
