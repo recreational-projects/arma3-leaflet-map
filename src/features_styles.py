@@ -39,6 +39,7 @@ class BaseStyle:
 class MarkerStyle(BaseStyle):
     """Define style for point feature. Creates a `folium.Marker`."""
 
+    show: bool = False
     icon_name: str = ""
     """From https://fontawesome.com/search?q=tower&ip=classic&ic=free-collection"""
 
@@ -52,6 +53,7 @@ class MarkerStyle(BaseStyle):
 class CircleMarkerStyle(BaseStyle):
     """Define style for point feature. Creates a `folium.CircleMarker`."""
 
+    show: bool = False
     radius: float = 7
     """Pixel, i.e. does not vary with zoom."""
     fill_opacity: float = 0.5
@@ -61,6 +63,7 @@ class CircleMarkerStyle(BaseStyle):
 class CircleStyle(BaseStyle):
     """Define style for point feature. Creates a `folium.Circle`."""
 
+    show: bool = False
     radius: float = 7
     """Meters."""
     fill_opacity: float = 0.5
@@ -121,15 +124,15 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "vegetationfir": MarkerStyle(color="green", icon_name="tree"),
     "vegetationpalm": MarkerStyle(color="green", icon_name="tree"),
     "vegetationvineyard": MarkerStyle(color="green", icon_name="plant-wilt"),
-    "tree": CircleStyle(color="green", radius=2, show=False),
-    "bush": CircleStyle(color="lightgreen", radius=1.5, show=False),
+    "tree": CircleStyle(color="green", radius=2),
+    "bush": CircleStyle(color="lightgreen", radius=1.5),
     # other:
     "tourism": MarkerStyle(),
     "viewpoint": MarkerStyle(icon_name="eye"),
     "shipwreck": MarkerStyle(color="blue", icon_name="skull-crossbones"),
     # other plotted as CircleMarker:
-    "mounts": CircleMarkerStyle(color="beige", radius=7, show=False),
-    "rock": CircleMarkerStyle(color="black", radius=3, show=False),
+    "mounts": CircleMarkerStyle(color="beige", radius=7),
+    "rock": CircleMarkerStyle(color="black", radius=3),
 }
 TEXT_STYLES = {
     "namecitycapital": TextStyle(color="black", font_size="1.5rem"),
@@ -149,7 +152,7 @@ LINE_STYLES: dict[str, LineStyle] = {
     "trail": LineStyle(color="gray", weight=1, dash_array="4 2"),
     "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
     "powerline": LineStyle(color="purple", weight=1),
-    "railway": LineStyle(color="black", weight=2),
+    "railway": LineStyle(color="black", weight=1),
     "highway": LineStyle(color="red", weight=6),  # xcam_taunus
 }
 POLYGON_STYLES: dict[str, PolygonStyle] = {
