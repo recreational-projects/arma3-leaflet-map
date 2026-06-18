@@ -99,41 +99,38 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "powerwave": MarkerStyle(color="purple", icon_name="house-tsunami"),
     "powersolar": MarkerStyle(color="purple", icon_name="solar-panel"),
     "powerwind": MarkerStyle(color="purple", icon_name="fan"),
+
     # buildings:
-    "airport": MarkerStyle(color="gray", icon_name="plane"),
-    "bordercrossing": MarkerStyle(color="gray", icon_name="road-barrier"),
+    # "bordercrossing": MarkerStyle(color="gray", icon_name="road-barrier"),
     "bunker": MarkerStyle(color="gray", icon_name="warehouse"),
     "chapel": MarkerStyle(color="gray", icon_name="place-of-worship"),
     "church": MarkerStyle(color="gray", icon_name="church"),
     "cross": MarkerStyle(color="gray", icon_name="cross"),
-    "fortress": MarkerStyle(color="gray", icon_name="fort-awesome"),
+    # "fortress": MarkerStyle(color="gray", icon_name="fort-awesome"),
     "fountain": MarkerStyle(color="gray", icon_name="shower"),
     "fuelstation": MarkerStyle(color="gray", icon_name="gas-pump"),
     "hospital": MarkerStyle(color="gray", icon_name="hospital"),
     "lighthouse": MarkerStyle(color="gray", icon_name="landmark"),
-    "quay": MarkerStyle(color="gray", icon_name="anchor"),
+    # "quay": MarkerStyle(color="gray", icon_name="anchor"),
     "ruin": MarkerStyle(color="gray"),
     "stack": MarkerStyle(color="gray"),
     "transmitter": MarkerStyle(color="gray", icon_name="tower-cell"),
     "view-tower": MarkerStyle(color="gray", icon_name="tower-observation"),
     "watertower": MarkerStyle(color="gray", icon_name="droplet"),
     "busstop": MarkerStyle(color="gray", icon_name="bus-simple"),
-    # settlements:
-    "citycenter": MarkerStyle(color="darkpurple", icon_name="arrows-to-dot"),
+
     # physical:
-    "hill": MarkerStyle(color="beige", icon_name="mound"),
-    "rockarea": MarkerStyle(color="beige", icon_name="hill-rockslide"),
+    # "hill": MarkerStyle(color="beige", icon_name="mound"),
+    # "rockarea": MarkerStyle(color="beige", icon_name="hill-rockslide"),
+
     # vegetation:
-    "vegetationbroadleaf": MarkerStyle(color="green", icon_name="leaf"),
-    "vegetationfir": MarkerStyle(color="green", icon_name="tree"),
-    "vegetationpalm": MarkerStyle(color="green", icon_name="tree"),
-    "vegetationvineyard": MarkerStyle(color="green", icon_name="plant-wilt"),
     "tree": CircleStyle(color="green", radius=2),
     "bush": CircleStyle(color="lightgreen", radius=1.5),
+
     # other:
     "tourism": MarkerStyle(),
-    "viewpoint": MarkerStyle(icon_name="eye"),
     "shipwreck": MarkerStyle(color="blue", icon_name="skull-crossbones"),
+
     # other plotted as CircleMarker:
     "mounts": CircleMarkerStyle(color="beige", radius=7),
     "rock": CircleMarkerStyle(color="black", radius=3),
@@ -144,20 +141,25 @@ TEXT_STYLES = {
     "namevillage": TextStyle(color="black"),
     "namelocal": TextStyle(color="dimgray", font_style="oblique"),
     "namemarine": TextStyle(color="blue"),
-    "namewaterlocal": TextStyle(color="blue", font_style="oblique"),
+    # "namewaterlocal": TextStyle(color="blue", font_style="oblique"),
     "airport": TextStyle(color="dimgray"),
+    "hill": TextStyle(color="dimgray"),  # not always named
     "citycenter": TextStyle(),  # not named?
-    "hill": TextStyle(),  # not always named
+    "vegetationbroadleaf": TextStyle(color="green"),
+    "vegetationvineyard": TextStyle(color="green"),
+    "vegetationfir": TextStyle(color="green"),
+    # "vegetationpalm": TextStyle(color="green"),
+    "viewpoint": TextStyle(color="red"),
+
 }
 LINE_STYLES: dict[str, LineStyle] = {
     "main_road": LineStyle(color="orange", weight=4),
     "road": LineStyle(color="yellow", weight=2),
     "track": LineStyle(color="white", weight=2),
     "trail": LineStyle(color="gray", weight=1, dash_array="4 2"),
-    "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
+    # "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
     "powerline": LineStyle(color="purple", weight=1),
     "railway": LineStyle(color="black", weight=1),
-    "highway": LineStyle(color="red", weight=6),  # xcam_taunus
 }
 POLYGON_STYLES: dict[str, PolygonStyle] = {
     "forest": PolygonStyle(color="green", show=False),

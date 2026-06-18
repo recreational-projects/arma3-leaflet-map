@@ -44,20 +44,16 @@ POLYGON_FEATURES = {
     "house",  # extra attributes not yet handled
 }
 MULTIPOLYGON_FEATURES = {
-    # GEOJSON `MultiPolygon`s from 'geojson' root dir, to be plotted as polygons:
+    # GEOJSON `MultiPolygon`s from 'geojson' root dir, to be plotted as multipolygons:
     "forest",
 }
 IGNORED_LOCATIONS = {
     # Features from 'geojson/locations' dir that should not be loaded (yet):
     # irrelevant:
-    "flatarea",
-    "flatareacity",
-    "flatareacitysmall",
-    "strongpointarea",
-    "fedroad071",  # wl_rosche: road name label
-    "fedroad191",  # wl_rosche: road name label
-    "fedroad493",  # wl_rosche: road name label
-    "ruslandicon_p148",  # beketov: road name label
+    # "flatarea",
+    # "flatareacity",
+    # "flatareacitysmall",
+    # "strongpointarea",
 }
 IGNORED_ROADS = {
     # Features from 'geojson/roads' dir that should not be loaded (yet):

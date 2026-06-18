@@ -20,6 +20,7 @@ from _setup import OUTPUT_PATH, SOURCE_DATA_PATH, setup_logging
 from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
 from src.plot import check_styles, plot_map
+from src.supported_maps import SUPPORTED_MAPS
 
 LOG_LEVEL = "INFO"
 
@@ -39,7 +40,11 @@ def main() -> None:
         log_msg = f"Map '{map_name}' already plotted - skipping."
         logger.warning(log_msg)
 
-    dirs_to_plot = [fp for fp in source_dirs if fp.stem not in existing_plots]
+    dirs_to_plot = [
+        fp
+        for fp in source_dirs
+        if fp.stem in SUPPORTED_MAPS and fp.stem not in existing_plots
+    ]
     log_msg = f"{len(dirs_to_plot)} maps to plot."
     logger.info(log_msg)
 
