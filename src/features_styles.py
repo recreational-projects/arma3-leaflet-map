@@ -79,6 +79,14 @@ class PolygonStyle(BaseStyle):
     """Define style for (multi)polygon features."""
 
 
+@dataclass(kw_only=True, frozen=True)
+class TextStyle(BaseStyle):
+    """Define style for text features."""
+
+    font_size: str | None = None
+    font_style: str | None = None
+
+
 POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     # power infra:
     "powerwave": MarkerStyle(color="purple", icon_name="house-tsunami"),
@@ -124,15 +132,15 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "rock": CircleMarkerStyle(color="black", radius=3, show=False),
 }
 TEXT_STYLES = {
-    "airport": True,
-    "citycenter": True,  # not named?
-    "hill": True,  # rarely named, e.g. 'enoch'
-    "namecity": True,
-    "namecitycapital": True,
-    "namelocal": True,
-    "namemarine": True,
-    "namevillage": True,
-    "namewaterlocal": True,
+    "namecitycapital": TextStyle(color="black", font_size="1.5rem"),
+    "namecity": TextStyle(color="black", font_size="1.25rem"),
+    "namevillage": TextStyle(color="black"),
+    "namelocal": TextStyle(color="dimgray", font_style="oblique"),
+    "namemarine": TextStyle(color="blue"),
+    "namewaterlocal": TextStyle(color="blue", font_style="oblique"),
+    "airport": TextStyle(color="dimgray"),
+    "citycenter": TextStyle(),  # not named?
+    "hill": TextStyle(),  # not always named
 }
 LINE_STYLES: dict[str, LineStyle] = {
     "main_road": LineStyle(color="orange", weight=4),

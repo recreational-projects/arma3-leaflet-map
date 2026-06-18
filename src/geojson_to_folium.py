@@ -15,6 +15,7 @@ from src.features_styles import (
     LineStyle,
     MarkerStyle,
     PolygonStyle,
+    TextStyle,
 )
 from src.plot_coordinate import PlotCoordinate
 
@@ -172,6 +173,7 @@ def text_marker_group(
     *,
     feature_kind: str,
     features: list[geojson.Feature],
+    style: TextStyle,
 ) -> folium.FeatureGroup:
     """
     Return `folium.FeatureGroup` of `folium.Marker`s
@@ -192,14 +194,22 @@ def text_marker_group(
         _non_breaking_name = ""
 
         if f.properties:
-            name = f.properties.get("name", "NO_NAME")
-            if name:
+            name = f.properties.get("name")
+            if name is not None:
                 _popup_text += f"•&nbsp;name: '{name}'<br>"
                 _tooltip_text += f": '{name}'"
                 _non_breaking_name = name.replace(" ", "&nbsp;")
 
         _popup_text += f"•&nbsp;coordinates: ({_coords[0]:.1f}, {_coords[1]:.1f})"
-        _html = f"{_non_breaking_name}"
+        _html_tag = f"<div style='color: {style.color}"
+
+        if style.font_style:
+            _html_tag += f"; font-style: {style.font_style}"
+        if style.font_size:
+            _html_tag += f"; font-size: {style.font_size}"
+
+        _html_tag += ";'>"
+        _html = f"{_html_tag}{_non_breaking_name}</>"
         marker = folium.Marker(
             location=_plot_coords.xy,
             popup=_popup_text,

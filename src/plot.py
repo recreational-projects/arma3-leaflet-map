@@ -15,6 +15,7 @@ from src.features_styles import (
     LineStyle,
     MarkerStyle,
     PolygonStyle,
+    TextStyle,
 )
 from src.geojson_to_folium import (
     marker_group,
@@ -180,5 +181,8 @@ def _plot_div_icon_multi_series(
         if not style:
             log_msg = f"- No style in TEXT_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
+            style = TextStyle()
 
-        text_marker_group(feature_kind=feature_kind, features=features).add_to(map_)
+        text_marker_group(
+            feature_kind=feature_kind, features=features, style=style
+        ).add_to(map_)

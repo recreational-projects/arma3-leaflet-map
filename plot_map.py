@@ -12,7 +12,7 @@ from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
 from src.plot import check_styles, plot_map
 
-MAP_NAME = "spex_utah_beach"
+MAP_NAME = "stratis"
 LOG_LEVEL = "INFO"
 
 
