@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Self
 
 import msgspec
 from arma3_offline_map_lib import geojson
+from arma3_offline_map_lib.dem import DEM
 
 from src import features_config
 from src.strings import format_iterable_of_str
@@ -136,6 +137,8 @@ class Arma3MapData:
     line_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     roads: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    dem: DEM
+    """Digital Elevation Model."""
 
     @classmethod
     def from_data(cls, path: Path) -> Self | None:
@@ -230,6 +233,9 @@ class Arma3MapData:
                 log_msg = f"- Ignored roads: {format_iterable_of_str(ignored_roads)}"
                 _LOGGER.warning(log_msg)
 
+        dem_ = DEM.from_esri_ascii_raster_gz(path / "dem.asc.gz")
+        _LOGGER.info("- Loaded DEM.")
+
         return cls(
             map_name=metadata_["worldName"],
             world_size=metadata_["worldSize"],
@@ -240,4 +246,5 @@ class Arma3MapData:
             line_features=non_road_lines,
             roads=roads,
             locations=locations,
+            dem=dem_,
         )

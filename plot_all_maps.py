@@ -16,7 +16,7 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
-from _setup import PLOT_PATH, SOURCE_DATA_PATH, setup_logging
+from _setup import OUTPUT_PATH, SOURCE_DATA_PATH, setup_logging
 from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
 from src.plot import check_styles, plot_map
@@ -33,8 +33,8 @@ def main() -> None:
 
     check_styles()
     source_dirs = sorted(SOURCE_DATA_PATH.iterdir())
-    PLOT_PATH.mkdir(exist_ok=True)
-    existing_plots = sorted(fp.stem for fp in list(PLOT_PATH.iterdir()))
+    OUTPUT_PATH.mkdir(exist_ok=True)
+    existing_plots = sorted(fp.stem for fp in list(OUTPUT_PATH.iterdir()))
     for map_name in existing_plots:
         log_msg = f"Map '{map_name}' already plotted - skipping."
         logger.warning(log_msg)
@@ -62,7 +62,7 @@ def main() -> None:
                 for fp in sorted(dirs_to_plot):
                     map_data = Arma3MapData.from_data(fp)
                     if map_data:
-                        plot_map(map_data=map_data, export_path=PLOT_PATH)
+                        plot_map(map_data=map_data, export_path=OUTPUT_PATH)
 
                     progress.update(task, advance=1)
 

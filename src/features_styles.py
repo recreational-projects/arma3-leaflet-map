@@ -3,6 +3,10 @@
 import logging
 from dataclasses import dataclass
 
+LAND_COLOR = (230, 230, 230)  # light gray
+SEA_COLOR = (183, 203, 230)  # light blue
+
+
 ICON_COLORS = {
     "green",
     "gray",

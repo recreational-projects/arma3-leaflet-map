@@ -6,11 +6,15 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 import folium
+from PIL import Image, ImageOps
 
+from _setup import WORKING_PATH
 from src.features_styles import (
+    LAND_COLOR,
     LINE_STYLES,
     POINT_STYLES,
     POLYGON_STYLES,
+    SEA_COLOR,
     TEXT_STYLES,
     LineStyle,
     MarkerStyle,
@@ -32,8 +36,10 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from arma3_offline_map_lib import geojson
+    from arma3_offline_map_lib.dem import DEM
 
     from src.arma3_map_data import Arma3MapData
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,11 +77,16 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
         tiles=None,
     )
     if map_data.preview_image_filepath:
-        _plot_sat_map_overlay(
+        _embed_sat_map_overlay(
             map_=map_,
-            image_path=map_data.preview_image_filepath,
+            path=map_data.preview_image_filepath,
             map_size=map_data.world_size,
         )
+    land_image_filepath_ = WORKING_PATH / f"{map_data.map_name}.png"
+    _render_land_image(path=land_image_filepath_, dem=map_data.dem)
+    _embed_land_image(
+        map_=map_, path=land_image_filepath_, map_size=map_data.world_size
+    )
     _plot_multipolygon_multi_series(
         map_=map_, multi_series=map_data.multipolygon_features
     )
@@ -95,16 +106,50 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     _LOGGER.info(log_msg, extra={"markup": True})
 
 
-def _plot_sat_map_overlay(*, map_: folium.Map, image_path: Path, map_size: int) -> None:
-    """TO DO."""
+def _embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> None:
+    """Embed the satellite map in the map as an overlay."""
     max_ = PlotCoordinate.from_position((map_size, map_size))
     map_image_overlay = folium.raster_layers.ImageOverlay(
-        image=str(image_path),
+        image=str(path),
         bounds=((0, 0), max_.xy),
         name="Preview satmap",
         overlay=True,
+        show=False,
     )
     map_image_overlay.add_to(map_)
+
+
+def _render_land_image(*, path: Path, dem: DEM) -> None:
+    """
+    Render the land/sea boolean array to an image file to be embedded later.
+
+    This appears to be much faster than directly embedding the array.
+    Recoloring is easier too.
+    """
+    _LOGGER.info("- Rendering land image...")
+    onebit_im = Image.fromarray(dem.land)
+    grayscale_im = onebit_im.convert(mode="L")
+    color_im = ImageOps.colorize(grayscale_im, black=SEA_COLOR, white=LAND_COLOR)
+    WORKING_PATH.mkdir(exist_ok=True)
+    color_im.save(path)
+    _LOGGER.info("  ...saved...")
+
+
+def _embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
+    """
+    Embed the land/sea image in the map as a base layer.
+
+    Note the image is same resolution as heightmap and is not smoothed.
+    """
+    max_ = PlotCoordinate.from_position((map_size, map_size))
+    map_image_overlay = folium.raster_layers.ImageOverlay(
+        image=str(path),
+        bounds=((0, 0), max_.xy),
+        name="Land/sea image",
+        overlay=False,
+    )
+    map_image_overlay.add_to(map_)
+    _LOGGER.info("  ...embedded.")
 
 
 def _plot_multipolygon_multi_series(
