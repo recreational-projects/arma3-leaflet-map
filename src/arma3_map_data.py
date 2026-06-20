@@ -128,6 +128,8 @@ class Arma3MapData:
     """Container for GeoJSON data assembled from data source."""
 
     world_name: str
+    author: str
+    display_name: str
     world_size: int
     grid_offset: Point2D
     elevation_offset: float
@@ -241,6 +243,8 @@ class Arma3MapData:
 
         return cls(
             world_name=metadata_["worldName"],
+            author=metadata_["author"],
+            display_name=metadata_["displayName"],
             world_size=metadata_["worldSize"],
             grid_offset=Point2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
             elevation_offset=metadata_["elevationOffset"],

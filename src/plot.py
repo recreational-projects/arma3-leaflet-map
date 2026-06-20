@@ -99,7 +99,7 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     _plot_div_icon_multi_series(map_=map_, multi_series=map_data.locations)
     _plot_grid(map_=map_, map_size=map_data.world_size)
     folium.LayerControl().add_to(map_)
-
+    _add_title(map_=map_, text=map_data.world_name)
     save_filepath = export_path / f"{map_data.world_name}.html"
     log_msg = f"Saving '{save_filepath}'... "
     _LOGGER.info(log_msg)
@@ -278,5 +278,10 @@ def _add_text_marker(*, map_: folium.Map, a3_position: Point2D, text: str) -> No
     marker = folium.Marker(
         location=pos_.xy,
         icon=folium.DivIcon(html=f'<div style="font-size: 1rem">{text}</div>'),
-    ).add_to(map_)
+    )
     marker.add_to(map_)
+
+
+def _add_title(*, map_: folium.Map, text: str) -> None:
+    html_ = "<h1 style='position:static; z-index:100000; left=60px'>text</h1>"
+    map_.get_root().html.add_child(folium.Element(html_))
