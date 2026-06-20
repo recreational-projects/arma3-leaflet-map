@@ -99,7 +99,6 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "powerwave": MarkerStyle(color="purple", icon_name="house-tsunami"),
     "powersolar": MarkerStyle(color="purple", icon_name="solar-panel"),
     "powerwind": MarkerStyle(color="purple", icon_name="fan"),
-
     # buildings:
     # "bordercrossing": MarkerStyle(color="gray", icon_name="road-barrier"),
     "bunker": MarkerStyle(color="gray", icon_name="warehouse"),
@@ -111,26 +110,21 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "fuelstation": MarkerStyle(color="gray", icon_name="gas-pump"),
     "hospital": MarkerStyle(color="gray", icon_name="hospital"),
     "lighthouse": MarkerStyle(color="gray", icon_name="landmark"),
-    # "quay": MarkerStyle(color="gray", icon_name="anchor"),
+    "quay": MarkerStyle(color="gray", icon_name="anchor"),
     "ruin": MarkerStyle(color="gray"),
     "stack": MarkerStyle(color="gray"),
     "transmitter": MarkerStyle(color="gray", icon_name="tower-cell"),
     "view-tower": MarkerStyle(color="gray", icon_name="tower-observation"),
     "watertower": MarkerStyle(color="gray", icon_name="droplet"),
     "busstop": MarkerStyle(color="gray", icon_name="bus-simple"),
-
     # physical:
     # "hill": MarkerStyle(color="beige", icon_name="mound"),
-    # "rockarea": MarkerStyle(color="beige", icon_name="hill-rockslide"),
-
     # vegetation:
     "tree": CircleStyle(color="green", radius=2),
     "bush": CircleStyle(color="lightgreen", radius=1.5),
-
     # other:
     "tourism": MarkerStyle(),
     "shipwreck": MarkerStyle(color="blue", icon_name="skull-crossbones"),
-
     # other plotted as CircleMarker:
     "mounts": CircleMarkerStyle(color="beige", radius=7),
     "rock": CircleMarkerStyle(color="black", radius=3),
@@ -144,13 +138,13 @@ TEXT_STYLES = {
     # "namewaterlocal": TextStyle(color="blue", font_style="oblique"),
     "airport": TextStyle(color="dimgray"),
     "hill": TextStyle(color="dimgray"),  # not always named
+    "rockarea": TextStyle(color="dimgray"),  # not always named?
     "citycenter": TextStyle(),  # not named?
     "vegetationbroadleaf": TextStyle(color="green"),
     "vegetationvineyard": TextStyle(color="green"),
     "vegetationfir": TextStyle(color="green"),
     # "vegetationpalm": TextStyle(color="green"),
     "viewpoint": TextStyle(color="red"),
-
 }
 LINE_STYLES: dict[str, LineStyle] = {
     "main_road": LineStyle(color="orange", weight=4),

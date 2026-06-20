@@ -49,11 +49,10 @@ MULTIPOLYGON_FEATURES = {
 }
 IGNORED_LOCATIONS = {
     # Features from 'geojson/locations' dir that should not be loaded (yet):
-    # irrelevant:
-    # "flatarea",
-    # "flatareacity",
-    # "flatareacitysmall",
-    # "strongpointarea",
+    "flatarea",
+    "flatareacity",
+    "flatareacitysmall",
+    "strongpointarea",
 }
 IGNORED_ROADS = {
     # Features from 'geojson/roads' dir that should not be loaded (yet):
