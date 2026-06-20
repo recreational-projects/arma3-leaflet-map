@@ -17,6 +17,7 @@ from rich.markup import escape
 
 from src import features_config
 from src.plot import (
+    add_title,
     embed_land_image,
     embed_sat_map_overlay,
     plot_bridges,
@@ -209,6 +210,12 @@ class Arma3MapData:
         plot_text_labels(map_=map_, multi_series=self.locations)
         plot_grid(map_=map_, map_size=size_)
         folium.LayerControl().add_to(map_)
+        add_title(
+            map_=map_,
+            text=f"{self.metadata.display_name} "
+            f"('{self.metadata.world_name}'). "
+            f"Author: {self.metadata.author}",
+        )
 
         log_text = escape(f"[{name_}] ...done.")
         log_msg = f"[bold]{log_text}[/]"

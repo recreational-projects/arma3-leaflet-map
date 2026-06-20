@@ -265,5 +265,16 @@ def _add_text_marker(*, map_: folium.Map, a3_position: Position2D, text: str) ->
     marker = folium.Marker(
         location=pos_.xy,
         icon=folium.DivIcon(html=f'<div style="font-size: 1rem">{text}</div>'),
-    ).add_to(map_)
+    )
     marker.add_to(map_)
+
+
+def add_title(*, map_: folium.Map, text: str) -> None:
+    """Add a title to the map."""
+    html_ = f"<h1>{text}</h1>"
+    root_ = map_.get_root()
+    if not getattr(root_, "html", None):
+        err_msg = "No HTML element in map root."
+        raise RuntimeError(err_msg)
+
+    root_.html.add_child(folium.Element(html_))
