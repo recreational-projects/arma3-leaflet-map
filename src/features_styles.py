@@ -78,6 +78,7 @@ class LineStyle(BaseStyle):
     """Define style for line features."""
 
     weight: float = 4
+    opacity: float = 1
     dash_array: str = ""
 
 
@@ -93,6 +94,8 @@ class TextStyle(BaseStyle):
     font_size: str | None = None
     font_style: str | None = None
 
+
+GRID_STYLE = LineStyle(color="black", weight=1, opacity=0.25)
 
 POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     # power infra:

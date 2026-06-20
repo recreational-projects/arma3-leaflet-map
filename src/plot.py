@@ -10,6 +10,7 @@ from PIL import Image, ImageOps
 
 from _setup import WORKING_PATH
 from src.features_styles import (
+    GRID_STYLE,
     LAND_COLOR,
     LINE_STYLES,
     POINT_STYLES,
@@ -95,6 +96,7 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     _plot_line_multi_series(map_=map_, multi_series=map_data.roads)
     _plot_line_multi_series(map_=map_, multi_series=map_data.line_features)
     _plot_div_icon_multi_series(map_=map_, multi_series=map_data.locations)
+    _plot_grid(map_=map_, map_size=map_data.world_size)
     folium.LayerControl().add_to(map_)
 
     save_filepath = export_path / f"{map_data.map_name}.html"
@@ -117,6 +119,32 @@ def _embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> No
         show=False,
     )
     map_image_overlay.add_to(map_)
+
+
+def _plot_grid(map_: folium.Map, map_size: int) -> None:
+    """Plot 1 km grid."""
+    style = GRID_STYLE
+    for interval in range(0, map_size, 1000):
+        h_line = folium.vector_layers.PolyLine(
+            locations=[
+                PlotCoordinate.from_position((0, interval)).xy,
+                PlotCoordinate.from_position((map_size, interval)).xy,
+            ],
+            color=style.color,
+            weight=style.weight,
+            opacity=style.opacity,
+        )
+        h_line.add_to(map_)
+        v_line = folium.vector_layers.PolyLine(
+            locations=[
+                PlotCoordinate.from_position((interval, 0)).xy,
+                PlotCoordinate.from_position((interval, map_size)).xy,
+            ],
+            color=style.color,
+            weight=style.weight,
+            opacity=style.opacity,
+        )
+        v_line.add_to(map_)
 
 
 def _render_land_image(*, path: Path, dem: DEM) -> None:
