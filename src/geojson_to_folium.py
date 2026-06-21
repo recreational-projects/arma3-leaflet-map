@@ -43,7 +43,7 @@ def multi_polygon_group(
         for multipolygon in f.geometry.coordinates:
             for polygon in multipolygon:
                 _plot_coords = [
-                    PlotCoordinate.from_position(coord) for coord in polygon
+                    PlotCoordinate.from_grad_meh_position(coord) for coord in polygon
                 ]
                 folium.Polygon(
                     locations=[p.xy for p in _plot_coords],
@@ -74,7 +74,7 @@ def polygon_group(
 
         for polygon in f.geometry.coordinates:
             _plot_coords = [
-                PlotCoordinate.from_position(position)
+                PlotCoordinate.from_grad_meh_position(position)
                 for position in polygon
                 if _validate_position(position)
             ]
@@ -120,7 +120,7 @@ def marker_group(
             raise TypeError(err_msg)
 
         _coords = f.geometry.coordinates
-        _plot_coords = PlotCoordinate.from_position(_coords)
+        _plot_coords = PlotCoordinate.from_grad_meh_position(_coords)
         _popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
         _tooltip_text = feature_kind
 
@@ -188,7 +188,7 @@ def text_marker_group(
             raise TypeError(err_msg)
 
         _coords = f.geometry.coordinates
-        _plot_coords = PlotCoordinate.from_position(_coords)
+        _plot_coords = PlotCoordinate.from_grad_meh_position(_coords)
         _popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
         _tooltip_text = feature_kind
         _non_breaking_name = ""
@@ -237,7 +237,8 @@ def poly_line_group(
             raise TypeError(err_msg)
 
         _plot_coords = [
-            PlotCoordinate.from_position(coord) for coord in f.geometry.coordinates
+            PlotCoordinate.from_grad_meh_position(coord)
+            for coord in f.geometry.coordinates
         ]
         folium.PolyLine(
             locations=[p.xy for p in _plot_coords],
