@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Self
 import msgspec
 from arma3_offline_map_lib import geojson
 from arma3_offline_map_lib.dem import DEM
+from arma3_offline_map_lib.point_2d import Point2D
 
 from src import features_config
 from src.strings import format_iterable_of_str
@@ -126,8 +127,10 @@ def _summarise_features(features: dict[str, list[geojson.Feature]]) -> str:
 class Arma3MapData:
     """Container for GeoJSON data assembled from data source."""
 
-    map_name: str
+    world_name: str
     world_size: int
+    grid_offset: Point2D
+    elevation_offset: float
     preview_image_filepath: Path | None
     multipolygon_features: dict[str, list[geojson.Feature]] = field(
         default_factory=dict
@@ -237,8 +240,10 @@ class Arma3MapData:
         _LOGGER.info("- Loaded DEM.")
 
         return cls(
-            map_name=metadata_["worldName"],
+            world_name=metadata_["worldName"],
             world_size=metadata_["worldSize"],
+            grid_offset=Point2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
+            elevation_offset=metadata_["elevationOffset"],
             preview_image_filepath=preview_image_filepath_,
             multipolygon_features=multipolygons,
             polygon_features=polygons,

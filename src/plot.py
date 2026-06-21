@@ -6,6 +6,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 import folium
+from arma3_offline_map_lib.point_2d import Point2D
 from PIL import Image, ImageOps
 
 from _setup import WORKING_PATH
@@ -66,11 +67,11 @@ def _duplicates(seq: Sequence[Any]) -> set[Any]:
 
 def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     """Plot Folium map and save."""
-    _centre = PlotCoordinate.from_position(
+    _center = PlotCoordinate.from_grad_meh_position(
         (map_data.world_size / 2, map_data.world_size / 2)
     )
     map_ = folium.Map(
-        location=_centre.xy,
+        location=_center.xy,
         zoom_start=13,
         control_scale=True,  # Show a scale on the bottom of the map.
         prefer_canvas=True,  # for vector layers instead of SVG
@@ -83,7 +84,7 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
             path=map_data.preview_image_filepath,
             map_size=map_data.world_size,
         )
-    land_image_filepath_ = WORKING_PATH / f"{map_data.map_name}.png"
+    land_image_filepath_ = WORKING_PATH / f"{map_data.world_name}.png"
     _render_land_image(path=land_image_filepath_, dem=map_data.dem)
     _embed_land_image(
         map_=map_, path=land_image_filepath_, map_size=map_data.world_size
@@ -99,18 +100,18 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     _plot_grid(map_=map_, map_size=map_data.world_size)
     folium.LayerControl().add_to(map_)
 
-    save_filepath = export_path / f"{map_data.map_name}.html"
+    save_filepath = export_path / f"{map_data.world_name}.html"
     log_msg = f"Saving '{save_filepath}'... "
     _LOGGER.info(log_msg)
 
     map_.save(save_filepath)
-    log_msg = f"[bold]Saved map for '{map_data.map_name}'."
+    log_msg = f"[bold]Saved map for '{map_data.world_name}'."
     _LOGGER.info(log_msg, extra={"markup": True})
 
 
 def _embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> None:
     """Embed the satellite map in the map as an overlay."""
-    max_ = PlotCoordinate.from_position((map_size, map_size))
+    max_ = PlotCoordinate.from_grad_meh_position((map_size, map_size))
     map_image_overlay = folium.raster_layers.ImageOverlay(
         image=str(path),
         bounds=((0, 0), max_.xy),
@@ -119,32 +120,6 @@ def _embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> No
         show=False,
     )
     map_image_overlay.add_to(map_)
-
-
-def _plot_grid(map_: folium.Map, map_size: int) -> None:
-    """Plot 1 km grid."""
-    style = GRID_STYLE
-    for interval in range(0, map_size, 1000):
-        h_line = folium.vector_layers.PolyLine(
-            locations=[
-                PlotCoordinate.from_position((0, interval)).xy,
-                PlotCoordinate.from_position((map_size, interval)).xy,
-            ],
-            color=style.color,
-            weight=style.weight,
-            opacity=style.opacity,
-        )
-        h_line.add_to(map_)
-        v_line = folium.vector_layers.PolyLine(
-            locations=[
-                PlotCoordinate.from_position((interval, 0)).xy,
-                PlotCoordinate.from_position((interval, map_size)).xy,
-            ],
-            color=style.color,
-            weight=style.weight,
-            opacity=style.opacity,
-        )
-        v_line.add_to(map_)
 
 
 def _render_land_image(*, path: Path, dem: DEM) -> None:
@@ -169,7 +144,7 @@ def _embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
 
     Note the image is same resolution as heightmap and is not smoothed.
     """
-    max_ = PlotCoordinate.from_position((map_size, map_size))
+    max_ = PlotCoordinate.from_grad_meh_position((map_size, map_size))
     map_image_overlay = folium.raster_layers.ImageOverlay(
         image=str(path),
         bounds=((0, 0), max_.xy),
@@ -259,3 +234,49 @@ def _plot_div_icon_multi_series(
         text_marker_group(
             feature_kind=feature_kind, features=features, style=style
         ).add_to(map_)
+
+
+def _plot_grid(map_: folium.Map, map_size: int) -> None:
+    """Plot 1 km grid."""
+    label_indent = 100.0
+    for i in range((map_size // 1000) + 1):
+        distance = 1000 * i
+        h_line = folium.vector_layers.PolyLine(
+            locations=[
+                PlotCoordinate.from_grad_meh_position((0, distance)).xy,
+                PlotCoordinate.from_grad_meh_position((map_size, distance)).xy,
+            ],
+            color=GRID_STYLE.color,
+            weight=GRID_STYLE.weight,
+            opacity=GRID_STYLE.opacity,
+        )
+        h_line.add_to(map_)
+        _add_text_marker(
+            map_=map_,
+            a3_position=Point2D(float(distance), label_indent),
+            text=f"{i:02}",
+        )
+        v_line = folium.vector_layers.PolyLine(
+            locations=[
+                PlotCoordinate.from_grad_meh_position((distance, 0)).xy,
+                PlotCoordinate.from_grad_meh_position((distance, map_size)).xy,
+            ],
+            color=GRID_STYLE.color,
+            weight=GRID_STYLE.weight,
+            opacity=GRID_STYLE.opacity,
+        )
+        v_line.add_to(map_)
+        _add_text_marker(
+            map_=map_,
+            a3_position=Point2D(label_indent, float(distance)),
+            text=f"{i:02}",
+        )
+
+
+def _add_text_marker(*, map_: folium.Map, a3_position: Point2D, text: str) -> None:
+    pos_ = PlotCoordinate.from_a3_position(a3_position)
+    marker = folium.Marker(
+        location=pos_.xy,
+        icon=folium.DivIcon(html=f'<div style="font-size: 1rem">{text}</div>'),
+    ).add_to(map_)
+    marker.add_to(map_)
