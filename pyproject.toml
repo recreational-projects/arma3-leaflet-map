@@ -33,6 +33,7 @@ ignore = [
     "ERA001",  # commented-out-code
     "D105",  # undocumented-magic-method
     "D205",  # missing-blank-line-after-summary
+    "N806",  # non-lowercase-variable-in-function
 ]
 extend-safe-fixes = [
     "TC", # flake8-type-checking
