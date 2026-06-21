@@ -16,6 +16,7 @@ from src.features_styles import (
     LINE_STYLES,
     POINT_STYLES,
     POLYGON_STYLES,
+    ROAD_STYLES,
     SEA_COLOR,
     TEXT_STYLES,
     LineStyle,
@@ -94,7 +95,7 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     )
     _plot_polygon_multi_series(map_=map_, multi_series=map_data.polygon_features)
     _plot_marker_multi_series(map_=map_, multi_series=map_data.point_features)
-    _plot_line_multi_series(map_=map_, multi_series=map_data.roads)
+    _plot_roads(map_=map_, multi_series=map_data.roads)
     _plot_line_multi_series(map_=map_, multi_series=map_data.line_features)
     _plot_div_icon_multi_series(map_=map_, multi_series=map_data.locations)
     _plot_grid(map_=map_, map_size=map_data.world_size)
@@ -202,6 +203,30 @@ def _plot_marker_multi_series(
         marker_group(feature_kind=feature_kind, features=features, style=style).add_to(
             map_
         )
+
+
+def _plot_roads(
+    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+) -> None:
+    """Plot all road features in style order (minor -> major)."""
+    remaining_road_kinds_in_map = set(multi_series.keys())
+    for feature_kind, style in ROAD_STYLES.items():
+        features = multi_series.get(feature_kind)
+        if features:
+            group = poly_line_group(
+                feature_kind=feature_kind, features=features, style=style
+            )
+            group.add_to(map_)
+
+        remaining_road_kinds_in_map.discard(feature_kind)
+
+    for feature_kind in remaining_road_kinds_in_map:
+        features = multi_series.get(feature_kind)
+        if features:
+            group = poly_line_group(
+                feature_kind=feature_kind, features=features, style=LineStyle()
+            )
+            group.add_to(map_)
 
 
 def _plot_line_multi_series(

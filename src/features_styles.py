@@ -150,14 +150,18 @@ TEXT_STYLES = {
     "viewpoint": TextStyle(color="red"),
 }
 LINE_STYLES: dict[str, LineStyle] = {
-    "main_road": LineStyle(color="orange", weight=4),
-    "road": LineStyle(color="yellow", weight=2),
-    "track": LineStyle(color="white", weight=2),
-    "trail": LineStyle(color="gray", weight=1, dash_array="4 2"),
-    # "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
     "powerline": LineStyle(color="purple", weight=1),
     "railway": LineStyle(color="black", weight=1),
 }
+ROAD_STYLES: dict[str, LineStyle] = {
+    # "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
+    "trail": LineStyle(color="gray", weight=1, dash_array="4 2"),
+    "track": LineStyle(color="white", weight=2),
+    "road": LineStyle(color="yellow", weight=2),
+    "main_road": LineStyle(color="orange", weight=4),
+}
+"""For roads, dict order determines plot order."""
+
 POLYGON_STYLES: dict[str, PolygonStyle] = {
     "forest": PolygonStyle(color="green", show=False),
     "house": PolygonStyle(color="gray"),
