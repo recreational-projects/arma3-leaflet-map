@@ -13,7 +13,7 @@ from arma3_offline_map_lib.geojson import (
     geojson_gz_files_in_dir,
     load_features_from_file,
 )
-from arma3_offline_map_lib.point_2d import Point2D
+from arma3_offline_map_lib.position_2d import Position2D
 from rich.markup import escape
 
 from src import features_config
@@ -113,7 +113,7 @@ class Arma3MapData:
 
     world_name: str
     world_size: int
-    grid_offset: Point2D
+    grid_offset: Position2D
     elevation_offset: float
     preview_image_filepath: Path | None = None
     root_features: _RootFeatures
@@ -171,7 +171,7 @@ class Arma3MapData:
         return cls(
             world_name=world_name_,
             world_size=metadata_["worldSize"],
-            grid_offset=Point2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
+            grid_offset=Position2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
             elevation_offset=metadata_["elevationOffset"],
             preview_image_filepath=preview_image_filepath_,
             root_features=root_features_,

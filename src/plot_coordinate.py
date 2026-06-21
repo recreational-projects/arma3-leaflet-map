@@ -5,9 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
+from arma3_offline_map_lib.position_2d import Position2D
+
 if TYPE_CHECKING:
     from arma3_offline_map_lib import geojson
-    from arma3_offline_map_lib.point_2d import Point2D
+
 
 _DEGREES_LATITUDE_TO_M_AT_EQUATOR = 110574
 _DEGREES_LONGITUDE_TO_M_AT_EQUATOR = 111320
@@ -37,18 +39,14 @@ class PlotCoordinate:
 
         Ignores any z. Note axis order switch.
         """
-        x = position[1]
-        y = position[0]
-        if x is None or y is None:
-            raise TypeError
-
+        pos_2d = Position2D.from_geojson_position(position)
         return cls(
-            x=x / _DEGREES_LATITUDE_TO_M_AT_EQUATOR,
-            y=y / _DEGREES_LONGITUDE_TO_M_AT_EQUATOR,
+            x=pos_2d.x / _DEGREES_LATITUDE_TO_M_AT_EQUATOR,
+            y=pos_2d.y / _DEGREES_LONGITUDE_TO_M_AT_EQUATOR,
         )
 
     @classmethod
-    def from_a3_position(cls, position: Point2D) -> Self:
+    def from_a3_position(cls, position: Position2D) -> Self:
         """
         Convert Arma 3 `Point2D` (meter units, arbitrary origin)
         to `PlotCoordinate` (long, lat).

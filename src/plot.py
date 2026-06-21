@@ -6,7 +6,7 @@ import logging
 from typing import TYPE_CHECKING
 
 import folium
-from arma3_offline_map_lib.point_2d import Point2D
+from arma3_offline_map_lib.position_2d import Position2D
 from PIL import Image, ImageOps
 
 from src import styles
@@ -236,7 +236,7 @@ def plot_grid(map_: folium.Map, map_size: int) -> None:
         h_line.add_to(map_)
         _add_text_marker(
             map_=map_,
-            a3_position=Point2D(float(distance), label_indent),
+            a3_position=Position2D(distance, label_indent),
             text=f"{i:02}",
         )
         v_line = folium.vector_layers.PolyLine(
@@ -251,12 +251,12 @@ def plot_grid(map_: folium.Map, map_size: int) -> None:
         v_line.add_to(map_)
         _add_text_marker(
             map_=map_,
-            a3_position=Point2D(label_indent, float(distance)),
+            a3_position=Position2D(label_indent, distance),
             text=f"{i:02}",
         )
 
 
-def _add_text_marker(*, map_: folium.Map, a3_position: Point2D, text: str) -> None:
+def _add_text_marker(*, map_: folium.Map, a3_position: Position2D, text: str) -> None:
     pos_ = PlotCoordinate.from_a3_position(a3_position)
     marker = folium.Marker(
         location=pos_.xy,
