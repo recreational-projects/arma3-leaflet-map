@@ -24,7 +24,141 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-def _load_features_from_dir(
+@dataclass(kw_only=True, frozen=True)
+class Arma3MapData:
+    """Container for GeoJSON data assembled from data source."""
+
+    world_name: str
+    world_size: int
+    grid_offset: Point2D
+    elevation_offset: float
+    preview_image_filepath: Path | None
+    multipolygon_features: dict[str, list[geojson.Feature]] = field(
+        default_factory=dict
+    )
+    polygon_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    point_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    line_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    roads: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    dem: DEM
+    """Digital Elevation Model."""
+
+    @classmethod
+    def from_data(cls, path: Path) -> Self | None:
+        """Compile from source GeoJSON."""
+        if not path.is_dir():
+            log_msg = f"Can't find '{path}'; skipping.[/]"
+            _LOGGER.error(log_msg, extra={"markup": True})
+            return None
+
+        log_msg = f"[bold]Loading data from '{path}'...[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
+        metadata_ = json.loads((path / "meta.json").read_text())
+        preview_image_filepath_ = path / "preview.png"
+        if not preview_image_filepath_.is_file():
+            log_msg = f"Couldn't find preview image '{preview_image_filepath_}'."
+            _LOGGER.warning(log_msg)
+            preview_image_filepath_ = None
+
+        geojson_dirpath_ = path / "geojson"
+        all_feature_descriptors = [
+            _get_feature_descriptor(fp)
+            for fp in _geojson_gz_files_in_dir(geojson_dirpath_)
+        ]
+        multipolygons = _load_features(
+            path=geojson_dirpath_,
+            include=features_config.MULTIPOLYGON_FEATURES,
+            kind="multipolygon",
+        )
+        polygons = _load_features(
+            path=geojson_dirpath_,
+            include=features_config.POLYGON_FEATURES,
+            kind="polygon",
+        )
+        points = _load_features(
+            path=geojson_dirpath_,
+            include=features_config.MARKER_FEATURES,
+            limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
+            kind="point",
+        )
+        non_road_lines = _load_features(
+            path=geojson_dirpath_,
+            include=features_config.POLY_LINE_FEATURES,
+            kind="non-road line",
+        )
+        ignored_feature_descriptors = (
+            all_feature_descriptors
+            - multipolygons.keys()
+            - polygons.keys()
+            - points.keys()
+            - non_road_lines.keys()
+        )
+        if ignored_feature_descriptors:
+            log_msg = (
+                f"- Ignored features: "
+                f"{format_iterable_of_str(ignored_feature_descriptors)}"
+            )
+            _LOGGER.warning(log_msg)
+
+        locations_path = geojson_dirpath_ / "locations"
+        all_location_kinds = [
+            _get_feature_descriptor(fp)
+            for fp in _geojson_gz_files_in_dir(locations_path)
+        ]
+        locations = _load_features(
+            path=locations_path,
+            exclude=features_config.IGNORED_LOCATIONS,
+            kind="location",
+        )
+        ignored_locations = all_location_kinds - locations.keys()
+        if ignored_locations:
+            log_msg = (
+                f"- Ignored locations: {format_iterable_of_str(ignored_locations)}"
+            )
+            _LOGGER.warning(log_msg)
+
+        dem_ = DEM.from_esri_ascii_raster_gz(path / "dem.asc.gz")
+        _LOGGER.info("- Loaded DEM.")
+
+        return cls(
+            world_name=metadata_["worldName"],
+            world_size=metadata_["worldSize"],
+            grid_offset=Point2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
+            elevation_offset=metadata_["elevationOffset"],
+            preview_image_filepath=preview_image_filepath_,
+            multipolygon_features=multipolygons,
+            polygon_features=polygons,
+            point_features=points,
+            line_features=non_road_lines,
+            roads=_load_roads(geojson_dirpath_ / "roads"),
+            locations=locations,
+            dem=dem_,
+        )
+
+
+def _load_roads(path: Path) -> dict[str, list[geojson.Feature]]:
+    if not path.is_dir():
+        log_msg = "- No roads source data."
+        _LOGGER.warning(log_msg)
+        return {}
+
+    all_road_kinds_in_map = [
+        _get_feature_descriptor(fp) for fp in _geojson_gz_files_in_dir(path)
+    ]
+    roads = _load_features(
+        path=path, exclude=features_config.IGNORED_ROADS, kind="road"
+    )
+    ignored_roads = all_road_kinds_in_map - roads.keys()
+    if ignored_roads:
+        log_msg = f"- Ignored roads: {format_iterable_of_str(ignored_roads)}"
+        _LOGGER.warning(log_msg)
+
+    return roads
+
+
+def _load_features(
     *,
     path: Path,
     include: Container[str] | None = None,
@@ -121,135 +255,3 @@ def _summarise_features(features: dict[str, list[geojson.Feature]]) -> str:
         f"{len(features)} {feature_kind}" for feature_kind, features in features.items()
     ]
     return format_iterable_of_str(texts)
-
-
-@dataclass(kw_only=True, frozen=True)
-class Arma3MapData:
-    """Container for GeoJSON data assembled from data source."""
-
-    world_name: str
-    world_size: int
-    grid_offset: Point2D
-    elevation_offset: float
-    preview_image_filepath: Path | None
-    multipolygon_features: dict[str, list[geojson.Feature]] = field(
-        default_factory=dict
-    )
-    polygon_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    point_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    line_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    roads: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    dem: DEM
-    """Digital Elevation Model."""
-
-    @classmethod
-    def from_data(cls, path: Path) -> Self | None:
-        """Compile from source GeoJSON."""
-        if not path.is_dir():
-            log_msg = f"Can't find '{path}'; skipping.[/]"
-            _LOGGER.error(log_msg, extra={"markup": True})
-            return None
-
-        log_msg = f"[bold]Loading data from '{path}'...[/]"
-        _LOGGER.info(log_msg, extra={"markup": True})
-
-        metadata_ = json.loads((path / "meta.json").read_text())
-        preview_image_filepath_ = path / "preview.png"
-        if not preview_image_filepath_.is_file():
-            log_msg = f"Couldn't find preview image '{preview_image_filepath_}'."
-            _LOGGER.warning(log_msg)
-            preview_image_filepath_ = None
-
-        geojson_dirpath_ = path / "geojson"
-        all_feature_descriptors = [
-            _get_feature_descriptor(fp)
-            for fp in _geojson_gz_files_in_dir(geojson_dirpath_)
-        ]
-        multipolygons = _load_features_from_dir(
-            path=geojson_dirpath_,
-            include=features_config.MULTIPOLYGON_FEATURES,
-            kind="multipolygon",
-        )
-        polygons = _load_features_from_dir(
-            path=geojson_dirpath_,
-            include=features_config.POLYGON_FEATURES,
-            kind="polygon",
-        )
-        points = _load_features_from_dir(
-            path=geojson_dirpath_,
-            include=features_config.MARKER_FEATURES,
-            limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
-            kind="point",
-        )
-        non_road_lines = _load_features_from_dir(
-            path=geojson_dirpath_,
-            include=features_config.POLY_LINE_FEATURES,
-            kind="non-road line",
-        )
-        ignored_feature_descriptors = (
-            all_feature_descriptors
-            - multipolygons.keys()
-            - polygons.keys()
-            - points.keys()
-            - non_road_lines.keys()
-        )
-        if ignored_feature_descriptors:
-            log_msg = (
-                f"- Ignored features: "
-                f"{format_iterable_of_str(ignored_feature_descriptors)}"
-            )
-            _LOGGER.warning(log_msg)
-
-        locations_path = geojson_dirpath_ / "locations"
-        all_location_kinds = [
-            _get_feature_descriptor(fp)
-            for fp in _geojson_gz_files_in_dir(locations_path)
-        ]
-        locations = _load_features_from_dir(
-            path=locations_path,
-            exclude=features_config.IGNORED_LOCATIONS,
-            kind="location",
-        )
-        ignored_locations = all_location_kinds - locations.keys()
-        if ignored_locations:
-            log_msg = (
-                f"- Ignored locations: {format_iterable_of_str(ignored_locations)}"
-            )
-            _LOGGER.warning(log_msg)
-
-        roads_path = geojson_dirpath_ / "roads"
-        if not roads_path.is_dir():
-            roads = {}
-            log_msg = "- No roads source data."
-            _LOGGER.warning(log_msg)
-        else:
-            all_roads = [
-                _get_feature_descriptor(fp)
-                for fp in _geojson_gz_files_in_dir(roads_path)
-            ]
-            roads = _load_features_from_dir(
-                path=roads_path, exclude=features_config.IGNORED_ROADS, kind="road"
-            )
-            ignored_roads = all_roads - roads.keys()
-            if ignored_roads:
-                log_msg = f"- Ignored roads: {format_iterable_of_str(ignored_roads)}"
-                _LOGGER.warning(log_msg)
-
-        dem_ = DEM.from_esri_ascii_raster_gz(path / "dem.asc.gz")
-        _LOGGER.info("- Loaded DEM.")
-
-        return cls(
-            world_name=metadata_["worldName"],
-            world_size=metadata_["worldSize"],
-            grid_offset=Point2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
-            elevation_offset=metadata_["elevationOffset"],
-            preview_image_filepath=preview_image_filepath_,
-            multipolygon_features=multipolygons,
-            polygon_features=polygons,
-            point_features=points,
-            line_features=non_road_lines,
-            roads=roads,
-            locations=locations,
-            dem=dem_,
-        )
