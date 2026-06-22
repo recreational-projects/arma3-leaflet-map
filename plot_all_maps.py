@@ -35,16 +35,17 @@ def main() -> None:
     check_styles()
     source_dirs = sorted(SOURCE_DATA_PATH.iterdir())
     OUTPUT_PATH.mkdir(exist_ok=True)
-    existing_plots = sorted(fp.stem for fp in list(OUTPUT_PATH.iterdir()))
-    for map_name in existing_plots:
-        log_msg = f"Map '{map_name}' already plotted - skipping."
-        logger.warning(log_msg)
 
-    dirs_to_plot = [
-        fp
-        for fp in source_dirs
-        if fp.stem in SUPPORTED_MAPS and fp.stem not in existing_plots
-    ]
+    potential_dirs_to_plot = [fp for fp in source_dirs if fp.stem in SUPPORTED_MAPS]
+    existing_plots = {fp.stem for fp in OUTPUT_PATH.iterdir()}
+    dirs_to_plot = []
+    for fp in potential_dirs_to_plot:
+        if fp.stem in existing_plots:
+            log_msg = f"Map '{fp.stem}' already plotted - skipping."
+            logger.warning(log_msg)
+        else:
+            dirs_to_plot.append(fp)
+
     log_msg = f"{len(dirs_to_plot)} maps to plot."
     logger.info(log_msg)
 
