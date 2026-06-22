@@ -44,7 +44,7 @@ POLYGON_FEATURES = {
     "house",  # extra attributes not yet handled
 }
 MULTIPOLYGON_FEATURES = {
-    # GEOJSON `MultiPolygon`s from 'geojson' root dir, to be plotted as multipolygons:
+    # GEOJSON `MultiPolygon`s from 'geojson' root dir:
     "forest",
 }
 IGNORED_LOCATIONS = {
@@ -54,10 +54,13 @@ IGNORED_LOCATIONS = {
     "flatareacitysmall",
     "strongpointarea",
 }
+BRIDGE_ROADS = {
+    # GEOJSON `Polygon`s from 'geojson/roads' dir:
+    "main_road-bridge",
+    "road-bridge",
+    "track-bridge",
+}
 IGNORED_ROADS = {
     # Features from 'geojson/roads' dir that should not be loaded (yet):
     "hide",
-    "main_road-bridge",  # not lines - for future implementation
-    "road-bridge",  # not lines - for future implementation
-    "track-bridge",  # not lines - for future implementation
 }

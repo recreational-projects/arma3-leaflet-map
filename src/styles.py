@@ -96,7 +96,6 @@ class TextStyle(BaseStyle):
 
 
 GRID_STYLE = LineStyle(color="black", weight=1, opacity=0.25)
-
 POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     # power infra:
     "powerwave": MarkerStyle(color="purple", icon_name="house-tsunami"),
@@ -154,13 +153,21 @@ LINE_STYLES: dict[str, LineStyle] = {
     "railway": LineStyle(color="black", weight=1),
 }
 ROAD_STYLES: dict[str, LineStyle] = {
-    # "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
+    # "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"), # dots
     "trail": LineStyle(color="gray", weight=1, dash_array="4 2"),
     "track": LineStyle(color="white", weight=2),
     "road": LineStyle(color="yellow", weight=2),
     "main_road": LineStyle(color="orange", weight=4),
 }
 """For roads, dict order determines plot order."""
+
+BRIDGE_STYLES: dict[str, PolygonStyle] = {
+    "trail-bridge": PolygonStyle(color=ROAD_STYLES["trail"].color),
+    "track-bridge": PolygonStyle(color=ROAD_STYLES["track"].color),
+    "road-bridge": PolygonStyle(color=ROAD_STYLES["road"].color),
+    "main_road-bridge": PolygonStyle(color=ROAD_STYLES["main_road"].color),
+}
+"""For bridges, dict order determines plot order."""
 
 POLYGON_STYLES: dict[str, PolygonStyle] = {
     "forest": PolygonStyle(color="green", show=False),
