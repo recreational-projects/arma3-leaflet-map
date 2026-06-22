@@ -9,7 +9,8 @@ import folium
 from arma3_offline_map_lib import geojson
 from folium import DivIcon
 
-from src.features_styles import (
+from src.plot_coordinate import PlotCoordinate
+from src.styles import (
     CircleMarkerStyle,
     CircleStyle,
     LineStyle,
@@ -17,16 +18,15 @@ from src.features_styles import (
     PolygonStyle,
     TextStyle,
 )
-from src.plot_coordinate import PlotCoordinate
 
 if TYPE_CHECKING:
-    from collections.abc import Sized
+    from collections.abc import Collection, Sized
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def multi_polygon_group(
-    *, feature_kind: str, features: list[geojson.Feature], style: PolygonStyle
+    *, feature_kind: str, features: Collection[geojson.Feature], style: PolygonStyle
 ) -> folium.FeatureGroup:
     """
     Return `folium.FeatureGroup` of `folium.MultiPolygon`s
@@ -37,7 +37,10 @@ def multi_polygon_group(
     )
     for f in features:
         if not isinstance(f.geometry, geojson.MultiPolygon):
-            err_msg = "Unexpected non-`MultiPolygon`."
+            err_msg = (
+                f"Unexpected non-`MultiPolygon` geometry "
+                f"when plotting '{feature_kind}' as MultiPolygon."
+            )
             raise TypeError(err_msg)
 
         for multipolygon in f.geometry.coordinates:
@@ -58,7 +61,7 @@ def multi_polygon_group(
 
 
 def polygon_group(
-    *, feature_kind: str, features: list[geojson.Feature], style: PolygonStyle
+    *, feature_kind: str, features: Collection[geojson.Feature], style: PolygonStyle
 ) -> folium.FeatureGroup:
     """
     Return `folium.FeatureGroup` of `folium.Polygon`s
@@ -69,7 +72,10 @@ def polygon_group(
     )
     for f in features:
         if not isinstance(f.geometry, geojson.Polygon):
-            err_msg = "Unexpected non-`Polygon`."
+            err_msg = (
+                f"Unexpected non-`Polygon` geometry "
+                f"when plotting '{feature_kind}' as Polygon."
+            )
             raise TypeError(err_msg)
 
         for polygon in f.geometry.coordinates:
@@ -104,7 +110,7 @@ def _validate_position(position: geojson.Position) -> geojson.Position | None:
 def marker_group(
     *,
     feature_kind: str,
-    features: list[geojson.Feature],
+    features: Collection[geojson.Feature],
     style: MarkerStyle | CircleMarkerStyle | CircleStyle,
 ) -> folium.FeatureGroup:
     """
@@ -116,7 +122,10 @@ def marker_group(
     )
     for f in features:
         if not isinstance(f.geometry, geojson.Point):
-            err_msg = "Unexpected non-`Point`."
+            err_msg = (
+                f"Unexpected non-`Point` geometry "
+                f"when plotting '{feature_kind}' as Marker."
+            )
             raise TypeError(err_msg)
 
         _coords = f.geometry.coordinates
@@ -172,7 +181,7 @@ def marker_group(
 def text_marker_group(
     *,
     feature_kind: str,
-    features: list[geojson.Feature],
+    features: Collection[geojson.Feature],
     style: TextStyle,
 ) -> folium.FeatureGroup:
     """
@@ -184,7 +193,10 @@ def text_marker_group(
     )
     for f in features:
         if not isinstance(f.geometry, geojson.Point):
-            err_msg = "Unexpected non-`Point`."
+            err_msg = (
+                f"Unexpected non-`Point` geometry "
+                f"when plotting '{feature_kind}' as text Marker."
+            )
             raise TypeError(err_msg)
 
         _coords = f.geometry.coordinates
@@ -222,7 +234,7 @@ def text_marker_group(
 
 
 def poly_line_group(
-    *, feature_kind: str, features: list[geojson.Feature], style: LineStyle
+    *, feature_kind: str, features: Collection[geojson.Feature], style: LineStyle
 ) -> folium.FeatureGroup:
     """
     Return `folium.FeatureGroup` of `folium.PolyLine`s
@@ -233,7 +245,10 @@ def poly_line_group(
     )
     for f in features:
         if not isinstance(f.geometry, geojson.LineString):
-            err_msg = "Unexpected non-`LineString`."
+            err_msg = (
+                f"Unexpected non-`LineString` geometry "
+                f"when plotting '{feature_kind}' as PolyLine."
+            )
             raise TypeError(err_msg)
 
         _plot_coords = [

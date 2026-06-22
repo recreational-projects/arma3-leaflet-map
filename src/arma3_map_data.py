@@ -17,8 +17,10 @@ from src import features_config
 from src.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
-    from collections.abc import Container
+    from collections.abc import Collection, Container, Mapping
     from pathlib import Path
+
+    from arma3_offline_map_lib.geojson import Feature
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +42,7 @@ class Arma3MapData:
     point_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     line_features: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     roads: dict[str, list[geojson.Feature]] = field(default_factory=dict)
+    bridges: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     dem: DEM
     """Digital Elevation Model."""
@@ -62,63 +65,10 @@ class Arma3MapData:
             _LOGGER.warning(log_msg)
             preview_image_filepath_ = None
 
-        geojson_dirpath_ = path / "geojson"
-        all_feature_descriptors = [
-            _get_feature_descriptor(fp)
-            for fp in _geojson_gz_files_in_dir(geojson_dirpath_)
-        ]
-        multipolygons = _load_features(
-            path=geojson_dirpath_,
-            include=features_config.MULTIPOLYGON_FEATURES,
-            kind="multipolygon",
-        )
-        polygons = _load_features(
-            path=geojson_dirpath_,
-            include=features_config.POLYGON_FEATURES,
-            kind="polygon",
-        )
-        points = _load_features(
-            path=geojson_dirpath_,
-            include=features_config.MARKER_FEATURES,
-            limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
-            kind="point",
-        )
-        non_road_lines = _load_features(
-            path=geojson_dirpath_,
-            include=features_config.POLY_LINE_FEATURES,
-            kind="non-road line",
-        )
-        ignored_feature_descriptors = (
-            all_feature_descriptors
-            - multipolygons.keys()
-            - polygons.keys()
-            - points.keys()
-            - non_road_lines.keys()
-        )
-        if ignored_feature_descriptors:
-            log_msg = (
-                f"- Ignored features: "
-                f"{format_iterable_of_str(ignored_feature_descriptors)}"
-            )
-            _LOGGER.warning(log_msg)
-
-        locations_path = geojson_dirpath_ / "locations"
-        all_location_kinds = [
-            _get_feature_descriptor(fp)
-            for fp in _geojson_gz_files_in_dir(locations_path)
-        ]
-        locations = _load_features(
-            path=locations_path,
-            exclude=features_config.IGNORED_LOCATIONS,
-            kind="location",
-        )
-        ignored_locations = all_location_kinds - locations.keys()
-        if ignored_locations:
-            log_msg = (
-                f"- Ignored locations: {format_iterable_of_str(ignored_locations)}"
-            )
-            _LOGGER.warning(log_msg)
-
+        geojson_path = path / "geojson"
+        root_features = _load_root_features(geojson_path)
+        roads_and_bridges = _load_roads_and_bridges(geojson_path / "roads")
+        locations_ = _load_locations(geojson_path / "locations")
         dem_ = DEM.from_esri_ascii_raster_gz(path / "dem.asc.gz")
         _LOGGER.info("- Loaded DEM.")
 
@@ -128,37 +78,103 @@ class Arma3MapData:
             grid_offset=Point2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
             elevation_offset=metadata_["elevationOffset"],
             preview_image_filepath=preview_image_filepath_,
-            multipolygon_features=multipolygons,
-            polygon_features=polygons,
-            point_features=points,
-            line_features=non_road_lines,
-            roads=_load_roads(geojson_dirpath_ / "roads"),
-            locations=locations,
+            multipolygon_features=root_features["multipolygons"],
+            polygon_features=root_features["polygons"],
+            point_features=root_features["points"],
+            line_features=root_features["lines"],
+            roads=roads_and_bridges["roads"],
+            bridges=roads_and_bridges["bridges"],
+            locations=locations_,
             dem=dem_,
         )
 
 
-def _load_roads(path: Path) -> dict[str, list[geojson.Feature]]:
+def _load_root_features(geojson_path: Path) -> dict[str, dict[str, list[Feature]]]:
+    """Load features from the root 'geojson' directory."""
+    multipolygons = _load_features_from_dir(
+        path=geojson_path,
+        include=features_config.MULTIPOLYGON_FEATURES,
+        kind="multipolygon",
+    )
+    polygons = _load_features_from_dir(
+        path=geojson_path, include=features_config.POLYGON_FEATURES, kind="polygon"
+    )
+    points = _load_features_from_dir(
+        path=geojson_path,
+        include=features_config.MARKER_FEATURES,
+        limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
+        kind="point",
+    )
+    lines = _load_features_from_dir(
+        path=geojson_path,
+        include=features_config.POLY_LINE_FEATURES,
+        kind="line",
+    )
+
+    all_root_feature_kinds = [
+        _get_feature_descriptor(fp) for fp in _geojson_gz_files_in_dir(geojson_path)
+    ]
+    ignored_root_feature_kinds = (
+        all_root_feature_kinds
+        - multipolygons.keys()
+        - polygons.keys()
+        - points.keys()
+        - lines.keys()
+    )
+    if ignored_root_feature_kinds:
+        log_msg = (
+            f"- Ignored features: {format_iterable_of_str(ignored_root_feature_kinds)}"
+        )
+        _LOGGER.warning(log_msg)
+
+    return {
+        "multipolygons": multipolygons,
+        "polygons": polygons,
+        "points": points,
+        "lines": lines,
+    }
+
+
+def _load_locations(path: Path) -> dict[str, list[geojson.Feature]]:
     if not path.is_dir():
-        log_msg = "- No roads source data."
+        log_msg = "- No 'locations' source dir."
         _LOGGER.warning(log_msg)
         return {}
 
-    all_road_kinds_in_map = [
+    all_location_kinds = [
         _get_feature_descriptor(fp) for fp in _geojson_gz_files_in_dir(path)
     ]
-    roads = _load_features(
-        path=path, exclude=features_config.IGNORED_ROADS, kind="road"
+    locations = _load_features_from_dir(
+        path=path, exclude=features_config.IGNORED_LOCATIONS, kind="location"
     )
-    ignored_roads = all_road_kinds_in_map - roads.keys()
-    if ignored_roads:
-        log_msg = f"- Ignored roads: {format_iterable_of_str(ignored_roads)}"
+    ignored_locations = all_location_kinds - locations.keys()
+    if ignored_locations:
+        log_msg = f"- Ignored locations: {format_iterable_of_str(ignored_locations)}"
         _LOGGER.warning(log_msg)
 
-    return roads
+    return locations
 
 
-def _load_features(
+def _load_roads_and_bridges(path: Path) -> dict[str, dict[str, list[geojson.Feature]]]:
+    """Load roads and bridges from a directory."""
+    if not path.is_dir():
+        log_msg = "- No 'roads' source dir."
+        _LOGGER.warning(log_msg)
+        return {}
+
+    roads_and_bridges = {"roads": {}, "bridges": {}}
+    for fp in _geojson_gz_files_in_dir(path):
+        kind = _get_feature_descriptor(fp)
+        if kind in features_config.BRIDGE_ROADS:
+            roads_and_bridges["bridges"][kind] = _load_features_from_file(fp)
+
+        elif kind not in features_config.IGNORED_ROADS:
+            roads_and_bridges["roads"][kind] = _load_features_from_file(fp)
+
+    return roads_and_bridges
+
+
+def _load_features_from_dir(
     *,
     path: Path,
     include: Container[str] | None = None,
@@ -174,7 +190,7 @@ def _load_features(
          `path/{FILENAME_STEM}.geojson.gz`.
 
     """
-    features: dict[str, list[geojson.Feature]] = {}
+    dir_features = {}
     if include and exclude:
         err_msg = "`include` and `exclude` cannot both be used."
         raise RuntimeError(err_msg)
@@ -192,19 +208,19 @@ def _load_features(
         filepaths = candidate_fps
 
     for fp in filepaths:
-        features_list = _load_features_from_file(path=fp, limit=limit)
+        features = _load_features_from_file(path=fp, limit=limit)
         feature_descriptor = _get_feature_descriptor(fp)
-        if features_list:
-            features[feature_descriptor] = features_list
+        if features:
+            dir_features[feature_descriptor] = features
 
-    if not features:
+    if not dir_features:
         log_msg = f"- No {kind} features."
         _LOGGER.warning(log_msg)
     else:
-        log_msg = f"- Loaded {kind} features: {_summarise_features(features)}"
+        log_msg = f"- Loaded {kind} features: {_summarise_features(dir_features)}"
         _LOGGER.debug(log_msg)
 
-    return features
+    return dir_features
 
 
 def _geojson_gz_files_in_dir(path: Path) -> list[Path]:
@@ -213,18 +229,19 @@ def _geojson_gz_files_in_dir(path: Path) -> list[Path]:
 
 
 def _load_features_from_file(
-    *, path: Path, limit: int | None = None
+    path: Path, *, limit: int | None = None
 ) -> list[geojson.Feature]:
     """
-    Load features from a `.geojson.gz` file.
+    Return features from a `.geojson.gz` file.
 
     NB: grad_meh source files are gzipped JSON arrays of GeoJSON features, not GeoJSON
     compliant files.
     """
     with gzip.open(path, "rt", encoding="utf-8") as file:
         features = msgspec.json.decode(file.read(), type=list[geojson.Feature])
+        # Can't return set as Feature is not hashable
 
-    feature_descriptor = _get_feature_descriptor(path)
+    feature_kind = _get_feature_descriptor(path)
     if not features:
         log_msg = f"- No valid features in `{path.name}`."
         _LOGGER.warning(log_msg)
@@ -232,7 +249,7 @@ def _load_features_from_file(
 
     if limit and len(features) > limit:
         log_msg = (
-            f"- Too many '{feature_descriptor}' features "
+            f"- Too many '{feature_kind}' features "
             f"({len(features)} > {limit}) - data ignored."
         )
         _LOGGER.warning(log_msg)
@@ -246,7 +263,7 @@ def _get_feature_descriptor(path: Path) -> str:
     return path.stem.removesuffix(".geojson")
 
 
-def _summarise_features(features: dict[str, list[geojson.Feature]]) -> str:
+def _summarise_features(features: Mapping[str, Collection[geojson.Feature]]) -> str:
     """Return a string summarizing features data."""
     if not features:
         return "None"

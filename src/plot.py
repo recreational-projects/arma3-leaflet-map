@@ -10,20 +10,7 @@ from arma3_offline_map_lib.point_2d import Point2D
 from PIL import Image, ImageOps
 
 from _setup import WORKING_PATH
-from src.features_styles import (
-    GRID_STYLE,
-    LAND_COLOR,
-    LINE_STYLES,
-    POINT_STYLES,
-    POLYGON_STYLES,
-    ROAD_STYLES,
-    SEA_COLOR,
-    TEXT_STYLES,
-    LineStyle,
-    MarkerStyle,
-    PolygonStyle,
-    TextStyle,
-)
+from src import styles
 from src.geojson_to_folium import (
     marker_group,
     multi_polygon_group,
@@ -35,7 +22,7 @@ from src.plot_coordinate import PlotCoordinate
 from src.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Collection, Mapping, Sequence
     from pathlib import Path
 
     from arma3_offline_map_lib import geojson
@@ -51,7 +38,7 @@ def check_styles() -> None:
     """TO DO."""
     icon_names = [
         style.icon_name
-        for style in POINT_STYLES.values()
+        for style in styles.POINT_STYLES.values()
         if hasattr(style, "icon_name")
     ]
     duplicate_icon_names = _duplicates(icon_names)
@@ -96,6 +83,7 @@ def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
     _plot_polygon_multi_series(map_=map_, multi_series=map_data.polygon_features)
     _plot_marker_multi_series(map_=map_, multi_series=map_data.point_features)
     _plot_roads(map_=map_, multi_series=map_data.roads)
+    _plot_bridges(map_=map_, multi_series=map_data.bridges)
     _plot_line_multi_series(map_=map_, multi_series=map_data.line_features)
     _plot_div_icon_multi_series(map_=map_, multi_series=map_data.locations)
     _plot_grid(map_=map_, map_size=map_data.world_size)
@@ -133,7 +121,9 @@ def _render_land_image(*, path: Path, dem: DEM) -> None:
     _LOGGER.info("- Rendering land image...")
     onebit_im = Image.fromarray(dem.land)
     grayscale_im = onebit_im.convert(mode="L")
-    color_im = ImageOps.colorize(grayscale_im, black=SEA_COLOR, white=LAND_COLOR)
+    color_im = ImageOps.colorize(
+        grayscale_im, black=styles.SEA_COLOR, white=styles.LAND_COLOR
+    )
     WORKING_PATH.mkdir(exist_ok=True)
     color_im.save(path)
     _LOGGER.info("  ...saved...")
@@ -157,16 +147,16 @@ def _embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
 
 
 def _plot_multipolygon_multi_series(
-    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+    *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
     for feature_kind, features in multi_series.items():
         # for forest, features is singleton
-        style = POLYGON_STYLES.get(feature_kind)
+        style = styles.POLYGON_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style in POLYGON_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
-            style = PolygonStyle()
+            style = styles.PolygonStyle()
 
         multi_polygon_group(
             feature_kind=feature_kind, features=features, style=style
@@ -174,15 +164,15 @@ def _plot_multipolygon_multi_series(
 
 
 def _plot_polygon_multi_series(
-    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+    *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
     for feature_kind, features in multi_series.items():
-        style = POLYGON_STYLES.get(feature_kind)
+        style = styles.POLYGON_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style in POLYGON_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
-            style = PolygonStyle()
+            style = styles.PolygonStyle()
 
         polygon_group(feature_kind=feature_kind, features=features, style=style).add_to(
             map_
@@ -190,15 +180,15 @@ def _plot_polygon_multi_series(
 
 
 def _plot_marker_multi_series(
-    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+    *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
     for feature_kind, features in multi_series.items():
-        style = POINT_STYLES.get(feature_kind)
+        style = styles.POINT_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style in POINT_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
-            style = MarkerStyle()
+            style = styles.MarkerStyle()
 
         marker_group(feature_kind=feature_kind, features=features, style=style).add_to(
             map_
@@ -206,11 +196,15 @@ def _plot_marker_multi_series(
 
 
 def _plot_roads(
-    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+    *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
-    """Plot all road features in style order (minor -> major)."""
-    remaining_road_kinds_in_map = set(multi_series.keys())
-    for feature_kind, style in ROAD_STYLES.items():
+    """
+    Plot all road features in style order (minor -> major).
+
+    If any road kinds don't have a style, they are plotted last with a default style.
+    """
+    remaining_road_kinds = set(multi_series.keys())
+    for feature_kind, style in styles.ROAD_STYLES.items():
         features = multi_series.get(feature_kind)
         if features:
             group = poly_line_group(
@@ -218,27 +212,61 @@ def _plot_roads(
             )
             group.add_to(map_)
 
-        remaining_road_kinds_in_map.discard(feature_kind)
+        remaining_road_kinds.discard(feature_kind)
 
-    for feature_kind in remaining_road_kinds_in_map:
+    for feature_kind in remaining_road_kinds:
+        log_msg = f"- No style in ROAD_STYLES for '{feature_kind}'."
+        _LOGGER.error(log_msg)
         features = multi_series.get(feature_kind)
         if features:
             group = poly_line_group(
-                feature_kind=feature_kind, features=features, style=LineStyle()
+                feature_kind=feature_kind, features=features, style=styles.LineStyle()
+            )
+            group.add_to(map_)
+
+
+def _plot_bridges(
+    *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
+) -> None:
+    """
+    Plot all bridge features in style order (minor -> major).
+
+    If any bridge kinds don't have a style, they are plotted last with a default style.
+    """
+    remaining_bridge_kinds = set(multi_series.keys())
+    for feature_kind, style in styles.BRIDGE_STYLES.items():
+        features = multi_series.get(feature_kind)
+        if features:
+            group = polygon_group(
+                feature_kind=feature_kind, features=features, style=style
+            )
+            group.add_to(map_)
+
+        remaining_bridge_kinds.discard(feature_kind)
+
+    for feature_kind in remaining_bridge_kinds:
+        log_msg = f"- No style in BRIDGE_STYLES for '{feature_kind}'."
+        _LOGGER.error(log_msg)
+        features = multi_series.get(feature_kind)
+        if features:
+            group = polygon_group(
+                feature_kind=feature_kind,
+                features=features,
+                style=styles.PolygonStyle(),
             )
             group.add_to(map_)
 
 
 def _plot_line_multi_series(
-    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+    *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
     for feature_kind, features in multi_series.items():
-        style = LINE_STYLES.get(feature_kind)
+        style = styles.LINE_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style in LINE_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
-            style = LineStyle()
+            style = styles.LineStyle()
 
         poly_line_group(
             feature_kind=feature_kind, features=features, style=style
@@ -246,15 +274,15 @@ def _plot_line_multi_series(
 
 
 def _plot_div_icon_multi_series(
-    *, map_: folium.Map, multi_series: dict[str, list[geojson.Feature]]
+    *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
     for feature_kind, features in multi_series.items():
-        style = TEXT_STYLES.get(feature_kind)
+        style = styles.TEXT_STYLES.get(feature_kind)
         if not style:
             log_msg = f"- No style in TEXT_STYLES for '{feature_kind}'."
             _LOGGER.error(log_msg)
-            style = TextStyle()
+            style = styles.TextStyle()
 
         text_marker_group(
             feature_kind=feature_kind, features=features, style=style
@@ -271,9 +299,9 @@ def _plot_grid(map_: folium.Map, map_size: int) -> None:
                 PlotCoordinate.from_grad_meh_position((0, distance)).xy,
                 PlotCoordinate.from_grad_meh_position((map_size, distance)).xy,
             ],
-            color=GRID_STYLE.color,
-            weight=GRID_STYLE.weight,
-            opacity=GRID_STYLE.opacity,
+            color=styles.GRID_STYLE.color,
+            weight=styles.GRID_STYLE.weight,
+            opacity=styles.GRID_STYLE.opacity,
         )
         h_line.add_to(map_)
         _add_text_marker(
@@ -286,9 +314,9 @@ def _plot_grid(map_: folium.Map, map_size: int) -> None:
                 PlotCoordinate.from_grad_meh_position((distance, 0)).xy,
                 PlotCoordinate.from_grad_meh_position((distance, map_size)).xy,
             ],
-            color=GRID_STYLE.color,
-            weight=GRID_STYLE.weight,
-            opacity=GRID_STYLE.opacity,
+            color=styles.GRID_STYLE.color,
+            weight=styles.GRID_STYLE.weight,
+            opacity=styles.GRID_STYLE.opacity,
         )
         v_line.add_to(map_)
         _add_text_marker(
