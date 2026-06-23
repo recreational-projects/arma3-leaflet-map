@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import folium
 from arma3_offline_map_lib.point_2d import Point2D
 from PIL import Image, ImageOps
 
-from _setup import WORKING_PATH
 from src import styles
 from src.geojson_to_folium import (
     marker_group,
@@ -19,86 +18,20 @@ from src.geojson_to_folium import (
     text_marker_group,
 )
 from src.plot_coordinate import PlotCoordinate
-from src.strings import format_iterable_of_str
+from src.setup import WORKING_PATH
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping, Sequence
+    from collections.abc import Collection, Mapping
     from pathlib import Path
 
     from arma3_offline_map_lib import geojson
     from arma3_offline_map_lib.dem import DEM
 
-    from src.arma3_map_data import Arma3MapData
-
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def check_styles() -> None:
-    """TO DO."""
-    icon_names = [
-        style.icon_name
-        for style in styles.POINT_STYLES.values()
-        if hasattr(style, "icon_name")
-    ]
-    duplicate_icon_names = _duplicates(icon_names)
-    if duplicate_icon_names:
-        log_msg = f"Non-unique icons: {format_iterable_of_str(duplicate_icon_names)}"
-        _LOGGER.warning(log_msg)
-
-
-def _duplicates(seq: Sequence[Any]) -> set[Any]:
-    """Return duplicate elements from `seq`."""
-    seen = set()
-    return {val for val in seq if (val in seen or seen.add(val))}
-
-
-def plot_map(*, map_data: Arma3MapData, export_path: Path) -> None:
-    """Plot Folium map and save."""
-    _center = PlotCoordinate.from_grad_meh_position(
-        (map_data.world_size / 2, map_data.world_size / 2)
-    )
-    map_ = folium.Map(
-        location=_center.xy,
-        zoom_start=13,
-        control_scale=True,  # Show a scale on the bottom of the map.
-        prefer_canvas=True,  # for vector layers instead of SVG
-        # crs="Simple",  # Don't use, as it seems to use pixels for plot units.
-        tiles=None,
-    )
-    if map_data.preview_image_filepath:
-        _embed_sat_map_overlay(
-            map_=map_,
-            path=map_data.preview_image_filepath,
-            map_size=map_data.world_size,
-        )
-    land_image_filepath_ = WORKING_PATH / f"{map_data.world_name}.png"
-    _render_land_image(path=land_image_filepath_, dem=map_data.dem)
-    _embed_land_image(
-        map_=map_, path=land_image_filepath_, map_size=map_data.world_size
-    )
-    _plot_multipolygon_multi_series(
-        map_=map_, multi_series=map_data.multipolygon_features
-    )
-    _plot_polygon_multi_series(map_=map_, multi_series=map_data.polygon_features)
-    _plot_marker_multi_series(map_=map_, multi_series=map_data.point_features)
-    _plot_roads(map_=map_, multi_series=map_data.roads)
-    _plot_bridges(map_=map_, multi_series=map_data.bridges)
-    _plot_line_multi_series(map_=map_, multi_series=map_data.line_features)
-    _plot_div_icon_multi_series(map_=map_, multi_series=map_data.locations)
-    _plot_grid(map_=map_, map_size=map_data.world_size)
-    folium.LayerControl().add_to(map_)
-
-    save_filepath = export_path / f"{map_data.world_name}.html"
-    log_msg = f"Saving '{save_filepath}'... "
-    _LOGGER.info(log_msg)
-
-    map_.save(save_filepath)
-    log_msg = f"[bold]Saved map for '{map_data.world_name}'."
-    _LOGGER.info(log_msg, extra={"markup": True})
-
-
-def _embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> None:
+def embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> None:
     """Embed the satellite map in the map as an overlay."""
     max_ = PlotCoordinate.from_grad_meh_position((map_size, map_size))
     map_image_overlay = folium.raster_layers.ImageOverlay(
@@ -111,7 +44,7 @@ def _embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> No
     map_image_overlay.add_to(map_)
 
 
-def _render_land_image(*, path: Path, dem: DEM) -> None:
+def render_land_image(*, path: Path, dem: DEM) -> None:
     """
     Render the land/sea boolean array to an image file to be embedded later.
 
@@ -129,7 +62,7 @@ def _render_land_image(*, path: Path, dem: DEM) -> None:
     _LOGGER.info("  ...saved...")
 
 
-def _embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
+def embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
     """
     Embed the land/sea image in the map as a base layer.
 
@@ -146,7 +79,7 @@ def _embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
     _LOGGER.info("  ...embedded.")
 
 
-def _plot_multipolygon_multi_series(
+def plot_multipolygon_multi_series(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
@@ -163,7 +96,7 @@ def _plot_multipolygon_multi_series(
         ).add_to(map_)
 
 
-def _plot_polygon_multi_series(
+def plot_polygon_multi_series(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
@@ -179,7 +112,7 @@ def _plot_polygon_multi_series(
         )
 
 
-def _plot_marker_multi_series(
+def plot_marker_multi_series(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
@@ -195,7 +128,7 @@ def _plot_marker_multi_series(
         )
 
 
-def _plot_roads(
+def plot_roads(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """
@@ -225,7 +158,7 @@ def _plot_roads(
             group.add_to(map_)
 
 
-def _plot_bridges(
+def plot_bridges(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """
@@ -257,7 +190,7 @@ def _plot_bridges(
             group.add_to(map_)
 
 
-def _plot_line_multi_series(
+def plot_line_multi_series(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
@@ -273,7 +206,7 @@ def _plot_line_multi_series(
         ).add_to(map_)
 
 
-def _plot_div_icon_multi_series(
+def plot_div_icon_multi_series(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """TO DO."""
@@ -289,7 +222,7 @@ def _plot_div_icon_multi_series(
         ).add_to(map_)
 
 
-def _plot_grid(map_: folium.Map, map_size: int) -> None:
+def plot_grid(map_: folium.Map, map_size: int) -> None:
     """Plot 1 km grid."""
     label_indent = 100.0
     for i in range((map_size // 1000) + 1):

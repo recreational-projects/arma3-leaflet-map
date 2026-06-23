@@ -41,3 +41,11 @@ extend-safe-fixes = [
 
 [tool.uv.sources]
 arma3-offline-map-lib = { git = "https://github.com/recreational-projects/arma3-offline-map-lib.git", rev = "v0.4.1" }
+
+[tool.pyrefly]
+project-includes = [
+    "**/*.py*",
+    "**/*.ipynb",
+]
+disable-search-path-heuristics = true
+search-path = ["."]
