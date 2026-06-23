@@ -34,7 +34,7 @@ def main() -> None:
     dirs_to_plot = []
     for fp in potential_dirs_to_plot:
         if fp.stem in existing_plots:
-            log_msg = f"Map '{fp.stem}' already plotted - skipping."
+            log_msg = f"'{fp.stem}' already plotted - skipping."
             logger.warning(log_msg)
         else:
             dirs_to_plot.append(fp)

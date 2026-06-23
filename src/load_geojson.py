@@ -22,30 +22,38 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-def load_root_features(geojson_path: Path) -> dict[str, dict[str, list[Feature]]]:
+def load_root_features(
+    *, path: Path, world_name: str
+) -> dict[str, dict[str, list[Feature]]]:
     """Load features from the root 'geojson' directory."""
     multipolygons = _load_features_from_dir(
-        path=geojson_path,
+        path=path,
         include=features_config.MULTIPOLYGON_FEATURES,
         kind="multipolygon",
+        world_name=world_name,
     )
     polygons = _load_features_from_dir(
-        path=geojson_path, include=features_config.POLYGON_FEATURES, kind="polygon"
+        path=path,
+        include=features_config.POLYGON_FEATURES,
+        kind="polygon",
+        world_name=world_name,
     )
     points = _load_features_from_dir(
-        path=geojson_path,
+        path=path,
         include=features_config.MARKER_FEATURES,
-        limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
         kind="point",
+        world_name=world_name,
+        limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
     )
     lines = _load_features_from_dir(
-        path=geojson_path,
+        path=path,
         include=features_config.POLY_LINE_FEATURES,
-        kind="line",
+        kind="non-road/bridge line",
+        world_name=world_name,
     )
 
     all_root_feature_kinds = [
-        _get_feature_descriptor(fp) for fp in _geojson_gz_files_in_dir(geojson_path)
+        _get_feature_descriptor(fp) for fp in _geojson_gz_files_in_dir(path)
     ]
     ignored_root_feature_kinds = (
         all_root_feature_kinds
@@ -56,7 +64,8 @@ def load_root_features(geojson_path: Path) -> dict[str, dict[str, list[Feature]]
     )
     if ignored_root_feature_kinds:
         log_msg = (
-            f"- Ignored features: {format_iterable_of_str(ignored_root_feature_kinds)}"
+            f"[{world_name}] ignored root features: "
+            f"{format_iterable_of_str(ignored_root_feature_kinds)}"
         )
         _LOGGER.warning(log_msg)
 
@@ -68,10 +77,12 @@ def load_root_features(geojson_path: Path) -> dict[str, dict[str, list[Feature]]
     }
 
 
-def load_roads_and_bridges(path: Path) -> dict[str, dict[str, list[geojson.Feature]]]:
+def load_roads_and_bridges(
+    *, path: Path, world_name: str
+) -> dict[str, dict[str, list[geojson.Feature]]]:
     """Load roads and bridges from the 'geojson/roads' directory."""
     if not path.is_dir():
-        log_msg = "- No 'roads' source dir."
+        log_msg = f"[{world_name}] no 'roads' source dir."
         _LOGGER.warning(log_msg)
         return {}
 
@@ -80,18 +91,18 @@ def load_roads_and_bridges(path: Path) -> dict[str, dict[str, list[geojson.Featu
     for fp in _geojson_gz_files_in_dir(path):
         kind = _get_feature_descriptor(fp)
         if kind in features_config.BRIDGE_ROADS:
-            bridges[kind] = _load_features_from_file(fp)
+            bridges[kind] = _load_features_from_file(path=fp, world_name=world_name)
 
         elif kind not in features_config.IGNORED_ROADS:
-            roads[kind] = _load_features_from_file(fp)
+            roads[kind] = _load_features_from_file(path=fp, world_name=world_name)
 
     return {"roads": roads, "bridges": bridges}
 
 
-def load_locations(path: Path) -> dict[str, list[geojson.Feature]]:
+def load_locations(*, path: Path, world_name: str) -> dict[str, list[geojson.Feature]]:
     """Load roads and bridges from the 'geojson/locations' directory."""
     if not path.is_dir():
-        log_msg = "- No 'locations' source dir."
+        log_msg = f"[{world_name}] no 'locations' source dir."
         _LOGGER.warning(log_msg)
         return {}
 
@@ -99,11 +110,17 @@ def load_locations(path: Path) -> dict[str, list[geojson.Feature]]:
         _get_feature_descriptor(fp) for fp in _geojson_gz_files_in_dir(path)
     ]
     locations = _load_features_from_dir(
-        path=path, exclude=features_config.IGNORED_LOCATIONS, kind="location"
+        path=path,
+        exclude=features_config.IGNORED_LOCATIONS,
+        kind="location",
+        world_name=world_name,
     )
     ignored_locations = all_location_kinds - locations.keys()
     if ignored_locations:
-        log_msg = f"- Ignored locations: {format_iterable_of_str(ignored_locations)}"
+        log_msg = (
+            f"[{world_name}] ignored locations: "
+            f"{format_iterable_of_str(ignored_locations)}"
+        )
         _LOGGER.warning(log_msg)
 
     return locations
@@ -116,6 +133,7 @@ def _load_features_from_dir(
     exclude: Container[str] | None = None,
     limit: int | None = None,
     kind: str,
+    world_name: str,
 ) -> dict[str, list[geojson.Feature]]:
     """
     Load features from `.geojson.gz` files in a directory.
@@ -143,16 +161,19 @@ def _load_features_from_dir(
         filepaths = candidate_fps
 
     for fp in filepaths:
-        features = _load_features_from_file(path=fp, limit=limit)
+        features = _load_features_from_file(path=fp, limit=limit, world_name=world_name)
         feature_descriptor = _get_feature_descriptor(fp)
         if features:
             dir_features[feature_descriptor] = features
 
     if not dir_features:
-        log_msg = f"- No {kind} features."
+        log_msg = f"[{world_name}] no {kind} features."
         _LOGGER.warning(log_msg)
     else:
-        log_msg = f"- Loaded {kind} features: {_summarise_features(dir_features)}"
+        log_msg = (
+            f"[{world_name}] loaded {kind} features: "
+            f"{_summarise_features(dir_features)}"
+        )
         _LOGGER.debug(log_msg)
 
     return dir_features
@@ -164,7 +185,7 @@ def _geojson_gz_files_in_dir(path: Path) -> list[Path]:
 
 
 def _load_features_from_file(
-    path: Path, *, limit: int | None = None
+    *, path: Path, limit: int | None = None, world_name: str
 ) -> list[geojson.Feature]:
     """
     Return features from a `.geojson.gz` file.
@@ -178,15 +199,17 @@ def _load_features_from_file(
 
     feature_kind = _get_feature_descriptor(path)
     if not features:
-        log_msg = f"- No valid features in `{path.name}`."
+        log_msg = f"[{world_name}] no valid features in `{path.name}`."
         _LOGGER.warning(log_msg)
         return []
 
     if limit and len(features) > limit:
         log_msg = (
-            f"- Too many '{feature_kind}' features "
-            f"({len(features)} > {limit}) - data ignored."
+            f"[{world_name}] "
+            f"too many '{feature_kind}' features ({len(features)} > {limit}) "
+            f"- data ignored."
         )
+
         _LOGGER.warning(log_msg)
         return []
 

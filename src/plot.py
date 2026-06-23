@@ -51,7 +51,6 @@ def render_land_image(*, path: Path, dem: DEM) -> None:
     This appears to be much faster than directly embedding the array.
     Recoloring is easier too.
     """
-    _LOGGER.info("- Rendering land image...")
     onebit_im = Image.fromarray(dem.land)
     grayscale_im = onebit_im.convert(mode="L")
     color_im = ImageOps.colorize(
@@ -59,7 +58,6 @@ def render_land_image(*, path: Path, dem: DEM) -> None:
     )
     WORKING_PATH.mkdir(exist_ok=True)
     color_im.save(path)
-    _LOGGER.info("  ...saved...")
 
 
 def embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
@@ -76,7 +74,6 @@ def embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
         overlay=False,
     )
     map_image_overlay.add_to(map_)
-    _LOGGER.info("  ...embedded.")
 
 
 def plot_multipolygon_multi_series(

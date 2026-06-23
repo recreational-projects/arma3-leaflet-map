@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Self
 import folium
 from arma3_offline_map_lib.dem import DEM
 from arma3_offline_map_lib.point_2d import Point2D
+from rich.markup import escape
 
 from src.load_geojson import load_locations, load_roads_and_bridges, load_root_features
 from src.plot import (
@@ -45,7 +46,7 @@ class Arma3MapData:
     world_size: int
     grid_offset: Point2D
     elevation_offset: float
-    preview_image_filepath: Path | None
+    preview_image_filepath: Path | None = None
     multipolygon_features: dict[str, list[geojson.Feature]] = field(
         default_factory=dict
     )
@@ -62,29 +63,42 @@ class Arma3MapData:
     def from_data(cls, path: Path) -> Self | None:
         """Compile from source GeoJSON."""
         if not path.is_dir():
-            log_msg = f"Can't find '{path}'; skipping.[/]"
-            _LOGGER.error(log_msg, extra={"markup": True})
+            log_msg = f"Can't find '{path}'; skipping."
+            _LOGGER.error(log_msg)
             return None
 
-        log_msg = f"[bold]Loading data from '{path}'...[/]"
+        log_text = escape(f"[{path.stem}] loading data...")
+        log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
 
         metadata_ = json.loads((path / "meta.json").read_text())
+        world_name_ = metadata_["worldName"]
+
         preview_image_filepath_ = path / "preview.png"
         if not preview_image_filepath_.is_file():
-            log_msg = f"Couldn't find preview image '{preview_image_filepath_}'."
+            log_msg = (
+                f"[{world_name_}] "
+                f"couldn't find preview image '{preview_image_filepath_}'."
+            )
             _LOGGER.warning(log_msg)
-            preview_image_filepath_ = None
 
         geojson_path = path / "geojson"
-        root_features = load_root_features(geojson_path)
-        roads_and_bridges = load_roads_and_bridges(geojson_path / "roads")
-        locations_ = load_locations(geojson_path / "locations")
+        root_features = load_root_features(path=geojson_path, world_name=world_name_)
+        roads_and_bridges = load_roads_and_bridges(
+            path=geojson_path / "roads", world_name=world_name_
+        )
+        locations_ = load_locations(
+            path=geojson_path / "locations", world_name=world_name_
+        )
         dem_ = DEM.from_esri_ascii_raster_gz(path / "dem.asc.gz")
-        _LOGGER.info("- Loaded DEM.")
+        log_msg = f"[{world_name_}] DEM loaded."
+        _LOGGER.info(log_msg)
 
+        log_text = escape(f"[{path.stem}] ...done.")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
         return cls(
-            world_name=metadata_["worldName"],
+            world_name=world_name_,
             world_size=metadata_["worldSize"],
             grid_offset=Point2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
             elevation_offset=metadata_["elevationOffset"],
@@ -101,6 +115,10 @@ class Arma3MapData:
 
     def render_map(self, export_path: Path) -> None:
         """Plot Folium map and save."""
+        log_text = escape(f"[{self.world_name}] rendering map...")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
         _center = PlotCoordinate.from_grad_meh_position(
             (self.world_size / 2, self.world_size / 2)
         )
@@ -119,6 +137,9 @@ class Arma3MapData:
         land_image_filepath_ = WORKING_PATH / f"{self.world_name}.png"
         render_land_image(path=land_image_filepath_, dem=self.dem)
         embed_land_image(map_=map_, path=land_image_filepath_, map_size=self.world_size)
+        log_msg = f"[{self.world_name}] land/sea image rendered and embedded."
+        _LOGGER.info(log_msg)
+
         plot_multipolygon_multi_series(
             map_=map_, multi_series=self.multipolygon_features
         )
@@ -131,10 +152,16 @@ class Arma3MapData:
         plot_grid(map_=map_, map_size=self.world_size)
         folium.LayerControl().add_to(map_)
 
+        log_text = escape(f"[{self.world_name}] ...done.")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
         save_filepath = export_path / f"{self.world_name}.html"
-        log_msg = f"Saving '{save_filepath}'... "
-        _LOGGER.info(log_msg)
+        log_text = escape(f"[{self.world_name}] saving...")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
 
         map_.save(save_filepath)
-        log_msg = f"[bold]Saved map for '{self.world_name}'."
+        log_text = escape(f"[{self.world_name}] ...done.")
+        log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
