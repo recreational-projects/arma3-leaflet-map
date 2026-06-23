@@ -10,10 +10,9 @@ Report map metadata anomalies.
 import json
 import logging
 
-from src.setup import INPUT_PATH, setup_logging
+from src.setup import INPUT_PATH, PROCESS_UNSUPPORTED_MAPS, setup_logging
 from src.supported_maps import SUPPORTED_MAPS
 
-CHECK_UNSUPPORTED_MAPS = True
 LOG_LEVEL = "WARNING"
 
 
@@ -23,7 +22,7 @@ def main() -> None:
     logger = logging.getLogger("rich")
 
     source_dirs = INPUT_PATH.iterdir()
-    if CHECK_UNSUPPORTED_MAPS:
+    if PROCESS_UNSUPPORTED_MAPS:
         data_dirs = source_dirs
     else:
         data_dirs = [dir_ for dir_ in source_dirs if dir_.stem in SUPPORTED_MAPS]
