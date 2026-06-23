@@ -1,3 +1,4 @@
 input_relative_dir= "../../gruppe-adler/meh-data/"
 working_relative_dir = "../working"
 output_relative_dir = "../maps"
+process_unsupported_maps = false
