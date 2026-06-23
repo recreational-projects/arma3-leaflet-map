@@ -152,6 +152,7 @@ class Arma3MapData:
                 f"couldn't find preview image '{preview_image_filepath_}'."
             )
             _LOGGER.warning(log_msg)
+            preview_image_filepath_ = None
 
         geojson_path = path / "geojson"
         root_features_ = _RootFeatures.load(path=geojson_path, world_name=world_name_)
