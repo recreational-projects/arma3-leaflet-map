@@ -83,8 +83,8 @@ def load_roads_and_bridges(
     """Load roads and bridges from the 'geojson/roads' directory."""
     if not path.is_dir():
         log_msg = f"[{world_name}] no 'roads' source dir."
-        _LOGGER.warning(log_msg)
-        return {}
+        _LOGGER.error(log_msg)
+        return {"roads": {}, "bridges": {}}
 
     roads = {}
     bridges = {}
