@@ -13,7 +13,7 @@ from rich.progress import (
 
 from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
-from src.setup import OUTPUT_PATH, SOURCE_DATA_PATH, setup_logging
+from src.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
 from src.supported_maps import SUPPORTED_MAPS
 
 LOG_LEVEL = "INFO"
@@ -26,7 +26,7 @@ def main() -> None:
     log_msg = f"IGNORED_FEATURE_KIND_THRESHOLD = {IGNORED_FEATURE_KIND_THRESHOLD}"
     logger.info(log_msg)
 
-    source_dirs = sorted(SOURCE_DATA_PATH.iterdir())
+    source_dirs = sorted(INPUT_PATH.iterdir())
     OUTPUT_PATH.mkdir(exist_ok=True)
 
     potential_dirs_to_plot = [fp for fp in source_dirs if fp.stem in SUPPORTED_MAPS]

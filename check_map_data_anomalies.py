@@ -10,7 +10,7 @@ Report map metadata anomalies.
 import json
 import logging
 
-from src.setup import SOURCE_DATA_PATH, setup_logging
+from src.setup import INPUT_PATH, setup_logging
 from src.supported_maps import SUPPORTED_MAPS
 
 CHECK_UNSUPPORTED_MAPS = True
@@ -22,7 +22,7 @@ def main() -> None:
     setup_logging(LOG_LEVEL)
     logger = logging.getLogger("rich")
 
-    source_dirs = SOURCE_DATA_PATH.iterdir()
+    source_dirs = INPUT_PATH.iterdir()
     if CHECK_UNSUPPORTED_MAPS:
         data_dirs = source_dirs
     else:
