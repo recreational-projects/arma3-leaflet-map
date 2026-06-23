@@ -10,7 +10,7 @@ Report map metadata anomalies.
 import json
 import logging
 
-from _setup import SOURCE_DATA_PATH, setup_logging
+from src.setup import SOURCE_DATA_PATH, setup_logging
 from src.supported_maps import SUPPORTED_MAPS
 
 CHECK_UNSUPPORTED_MAPS = True

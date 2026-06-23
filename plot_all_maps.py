@@ -1,9 +1,4 @@
-"""
-Plot multiple maps.
-
-NB: the source *.geojson.gz files are gzipped JSON arrays of GeoJSON features, not
-GeoJSON compliant files.
-"""
+"""Plot all supported maps."""
 
 import logging
 
@@ -16,10 +11,9 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
-from _setup import OUTPUT_PATH, SOURCE_DATA_PATH, setup_logging
 from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
-from src.plot import check_styles, plot_map
+from src.setup import OUTPUT_PATH, SOURCE_DATA_PATH, setup_logging
 from src.supported_maps import SUPPORTED_MAPS
 
 LOG_LEVEL = "INFO"
@@ -32,7 +26,6 @@ def main() -> None:
     log_msg = f"IGNORED_FEATURE_KIND_THRESHOLD = {IGNORED_FEATURE_KIND_THRESHOLD}"
     logger.info(log_msg)
 
-    check_styles()
     source_dirs = sorted(SOURCE_DATA_PATH.iterdir())
     OUTPUT_PATH.mkdir(exist_ok=True)
 
@@ -68,7 +61,7 @@ def main() -> None:
                 for fp in sorted(dirs_to_plot):
                     map_data = Arma3MapData.from_data(fp)
                     if map_data:
-                        plot_map(map_data=map_data, export_path=OUTPUT_PATH)
+                        map_data.render_map(OUTPUT_PATH)
 
                     progress.update(task, advance=1)
 
