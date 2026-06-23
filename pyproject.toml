@@ -18,7 +18,7 @@ extend-safe-fixes = [
 [dependency-groups]
 dev = [
     "ruff>=0.15.18",
-    "ty>=0.0.51",
+    "ty>=0.0.52",
 ]
 
 [tool.ruff.lint]
@@ -34,6 +34,7 @@ ignore = [
     "D105",  # undocumented-magic-method
     "D205",  # missing-blank-line-after-summary
     "N806",  # non-lowercase-variable-in-function
+    "PLR0913", # too-many-arguments
 ]
 extend-safe-fixes = [
     "TC", # flake8-type-checking
