@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import tomllib
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -16,17 +17,11 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-_INPUT_DATA_RELATIVE_DIR = "../../gruppe-adler/meh-data/"
-_WORKING_RELATIVE_DIR = "../working"
-_OUTPUT_RELATIVE_DIR = "../maps"
 _BASE_PATH = Path(__file__).resolve().parent
-
-SOURCE_DATA_PATH = _BASE_PATH / _INPUT_DATA_RELATIVE_DIR
-WORKING_PATH = _BASE_PATH / _WORKING_RELATIVE_DIR
-OUTPUT_PATH = _BASE_PATH / _OUTPUT_RELATIVE_DIR
 
 
 def setup_logging(level: str) -> None:
+    """Configure logging for scripts."""
     logging.basicConfig(
         level=level,
         format="%(message)s",
@@ -52,3 +47,10 @@ def _duplicates(seq: Sequence[Any]) -> set[Any]:
     """Return duplicate elements from `seq`."""
     seen = set()
     return {val for val in seq if (val in seen or seen.add(val))}
+
+
+with (_BASE_PATH / "../config.toml").open(mode="rb") as f:
+    config = tomllib.load(f)
+    INPUT_PATH = _BASE_PATH / config["input_relative_dir"]
+    WORKING_PATH = _BASE_PATH / config["working_relative_dir"]
+    OUTPUT_PATH = _BASE_PATH / config["output_relative_dir"]

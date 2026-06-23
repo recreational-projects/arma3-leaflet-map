@@ -1,15 +1,15 @@
 # arma3-leaflet-map
 
-A proof of concept to create [Leaflet](https://leafletjs.com/) interactive maps
-from Arma 3 maps. Uses [Folium](https://python-visualization.github.io/folium/)
-to produce the maps in Python.
+A proof of concept to create Arma 3 [Leaflet](https://leafletjs.com/) interactive maps
+from [Gruppe Adler Map Exporter](https://github.com/gruppe-adler/grad_meh) ('grad_meh')
+output.
+
+Uses the [Folium](https://python-visualization.github.io/folium/) 
+Leaflet library to produce the maps in Python.
 
 ## Prerequisites
 
-A folder containing maps data exported with
-[Gruppe Adler Map Exporter](https://github.com/gruppe-adler/grad_meh) ('grad_meh').
-
-This document assumes `uv` is installed, but not required.
+A folder containing maps data exported with grad_meh.
 
 ## Installation
 
@@ -24,27 +24,38 @@ uv pip install .
 ```
 
 ## Usage
-- Edit `_setup.py` so that:
-  - `INPUT_DATA_RELATIVE_DIR` points to the folder containing
-    the grad_meh maps data
-  - `OUTPUT_RELATIVE_DIR` points to the folder where the maps should be saved
-- To plot a single map:
-  - Edit `plot_map.py` so that `MAP_NAME` points to the required map
-  - Run `plot_map.py`
-- To plot all maps:
-  - Run `plot_all_maps.py`
-- Each HTML file represents a single Arma 3 map; open in a browser
-- NB: the HTML files can be large, between 10 MB and 150 MB
+Edit `config.toml` so that:
+- `input_relative_dir` points to the folder containing
+  the grad_meh maps data
+- `output_relative_dir` points to the folder where the maps should be saved
 
-## Screenshot (v0.1.0)
+### To plot a single map:
+Edit `plot_map.py` so that `MAP_NAME` points to the required map, then:
+```shell
+uv run plot_map.py 
+```
+
+### To plot all maps in the folder
+```shell
+uv run plot_all_maps.py 
+```
+
+## Output
+
+Each HTML file in the output folder represents a single Arma 3 map; open in a browser.
+
+NB: the HTML files can be large, between 10 MB and 150 MB
+
+### Screenshot (v0.1.0)
 
 ![Screenshot of Altis map](docs/screenshot.png)
 
-## What's included in the maps
+### What's included in the maps
 
+- Layers for roads/tracks/trails, bridges, powerlines, railways,
+  rivers, runways, forests, buildings
+- Icon marker layers for each kind of point feature
+- Text labels for each kind of location (settlements etc.)
 - A very low-res satellite image
-- Icon marker layers for each kind of point feature and location
-- Layers for almost all other features: roads/tracks/trails, powerlines, railways,
-  rivers, runways, forests, buildings 
-- However, to keep file sizes and HTML rendering time manageable, layers are excluded
+- NB: to keep file sizes and HTML rendering time manageable, layers are excluded
   if they would contain more than 1000 objects
