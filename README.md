@@ -49,9 +49,9 @@ Open in a browser to view.
 
 NB: the HTML files can be large, up to about 150&nbsp;MB.
 
-### Screenshot (v0.1.0)
+### Screenshot (v0.5.0)
 
-![Screenshot of Altis map](docs/screenshot.png)
+![Screenshot of Altis map](docs/screenshot_050_altis.png)
 
 ### What's included in the maps
 
