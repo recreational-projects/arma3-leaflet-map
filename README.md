@@ -40,11 +40,14 @@ uv run plot_map.py
 uv run plot_all_maps.py 
 ```
 
+Each map can take up to around 60&nbsp;s to produce.
+
 ## Output
 
-Each HTML file in the output folder represents a single Arma 3 map; open in a browser.
+Each Leaflet maps is saved in `output_relative_dir` as a self-contained HTML file.
+Open in a browser to view.
 
-NB: the HTML files can be large, between 10 MB and 150 MB
+NB: the HTML files can be large, up to about 150&nbsp;MB.
 
 ### Screenshot (v0.1.0)
 
@@ -52,10 +55,11 @@ NB: the HTML files can be large, between 10 MB and 150 MB
 
 ### What's included in the maps
 
+- A simple land/sea image
+- A very low-res satellite image
 - Layers for roads/tracks/trails, bridges, powerlines, railways,
   rivers, runways, forests, buildings
 - Icon marker layers for each kind of point feature
 - Text labels for each kind of location (settlements etc.)
-- A very low-res satellite image
 - NB: to keep file sizes and HTML rendering time manageable, layers are excluded
   if they would contain more than 1000 objects
