@@ -18,7 +18,6 @@ from src.geojson_to_folium import (
     text_marker_group,
 )
 from src.plot_coordinate import PlotCoordinate
-from src.setup import WORKING_PATH
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Mapping
@@ -56,7 +55,6 @@ def render_land_image(*, path: Path, dem: DEM) -> None:
     color_im = ImageOps.colorize(
         grayscale_im, black=styles.WATER_COLOR, white=styles.LAND_COLOR
     )
-    WORKING_PATH.mkdir(exist_ok=True)
     color_im.save(path)
 
 
