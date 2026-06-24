@@ -54,7 +54,7 @@ def render_land_image(*, path: Path, dem: DEM) -> None:
     onebit_im = Image.fromarray(dem.land)
     grayscale_im = onebit_im.convert(mode="L")
     color_im = ImageOps.colorize(
-        grayscale_im, black=styles.SEA_COLOR, white=styles.LAND_COLOR
+        grayscale_im, black=styles.WATER_COLOR, white=styles.LAND_COLOR
     )
     WORKING_PATH.mkdir(exist_ok=True)
     color_im.save(path)

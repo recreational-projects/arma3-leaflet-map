@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 
 LAND_COLOR = (230, 230, 230)  # light gray
-SEA_COLOR = (183, 203, 230)  # light blue
+WATER_COLOR = (183, 203, 230)  # light blue
 
 
 ICON_COLORS = {
@@ -36,6 +36,7 @@ class BaseStyle:
     """Define style."""
 
     color: str = "red"  # prominent default to highlight missing styles
+    """HTML format."""
     show: bool = True
 
 
@@ -85,6 +86,8 @@ class LineStyle(BaseStyle):
 @dataclass(kw_only=True, frozen=True)
 class PolygonStyle(BaseStyle):
     """Define style for (multi)polygon features."""
+
+    weight: float = 0
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -172,6 +175,6 @@ BRIDGE_STYLES: dict[str, PolygonStyle] = {
 POLYGON_STYLES: dict[str, PolygonStyle] = {
     "forest": PolygonStyle(color="green", show=False),
     "house": PolygonStyle(color="gray"),
-    "river": PolygonStyle(color="blue"),
+    "river": PolygonStyle(color=f"rgb{WATER_COLOR}", weight=1),
     "runway": PolygonStyle(color="gray"),
 }
