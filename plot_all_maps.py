@@ -1,4 +1,9 @@
-"""Plot all supported maps."""
+"""
+Render multiple maps.
+
+By default, only supported maps are rendered.
+Edit `config.toml` so that `process_unsupported_maps = true` to override.
+"""
 
 import logging
 

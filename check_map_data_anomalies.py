@@ -1,10 +1,10 @@
 """
 Report map metadata anomalies.
 
-* `worldName` != directory name
-* `elevationOffset` != 0
-* `gridOffsetX` != 0
-* `gridOffsetY` != `worldSize`
+- `worldName` != directory name
+- `elevationOffset` != 0
+- `gridOffsetX` != 0
+- `gridOffsetY` != `worldSize`
 """
 
 import json
