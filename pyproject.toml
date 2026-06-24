@@ -18,7 +18,7 @@ extend-safe-fixes = [
 [dependency-groups]
 dev = [
     "ruff>=0.15.18",
-    "ty>=0.0.52",
+    "ty>=0.0.53",
 ]
 
 [tool.ruff.lint]
