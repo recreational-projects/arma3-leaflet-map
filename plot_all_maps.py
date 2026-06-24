@@ -50,7 +50,6 @@ def main() -> None:
     logger.info(log_msg)
 
     if dirs_to_plot:
-        OUTPUT_PATH.mkdir(exist_ok=True)
         progress = Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),

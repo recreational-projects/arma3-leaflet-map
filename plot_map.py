@@ -17,7 +17,6 @@ def main() -> None:
     log_msg = f"IGNORED_FEATURE_KIND_THRESHOLD = {IGNORED_FEATURE_KIND_THRESHOLD}"
     logger.info(log_msg)
 
-    OUTPUT_PATH.mkdir(exist_ok=True)
     map_data = Arma3MapData.from_data(INPUT_PATH / MAP_NAME)
     if map_data:
         map_data.render_map(OUTPUT_PATH)

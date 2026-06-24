@@ -55,3 +55,6 @@ with (_BASE_PATH / "../config.toml").open(mode="rb") as f:
     WORKING_PATH = _BASE_PATH / config["working_relative_dir"]
     OUTPUT_PATH = _BASE_PATH / config["output_relative_dir"]
     PROCESS_UNSUPPORTED_MAPS = config["process_unsupported_maps"]
+
+WORKING_PATH.mkdir(exist_ok=True)
+OUTPUT_PATH.mkdir(exist_ok=True)
