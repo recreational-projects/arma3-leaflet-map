@@ -7,6 +7,21 @@ output.
 Uses the [Folium](https://python-visualization.github.io/folium/) 
 Leaflet library to produce the maps in Python.
 
+**How is this different from [Arma3Map](https://atlas.plan-ops.fr/maps/arma3), 
+which powers [PLANOPS Atlas](https://atlas.plan-ops.fr/maps/arma3)?**
+
+- Utilizes more of Leaflet's capabilities; text and objects are vector graphics,
+  not raster images
+- More interactive; all layers can be toggled on/off
+- No drawing/annotation tools
+- No high-resolution satellite images
+- Very much a work-in-progress
+
+### Screenshots (v0.5.0)
+
+![Screenshot of Altis map](docs/screenshot_050_altis.png)
+![Screenshot of Altis map zoomed in](docs/screenshot_050_altis_zoom.png)
+
 ## Prerequisites
 
 A folder containing maps data exported with grad_meh.
@@ -29,13 +44,13 @@ Edit `config.toml` so that:
   the grad_meh maps data
 - `output_relative_dir` points to the folder where the maps should be saved
 
-### To plot a single map:
+### To render a single map:
 Edit `plot_map.py` so that `MAP_NAME` points to the required map, then:
 ```shell
 uv run plot_map.py 
 ```
 
-### To plot all maps in the folder
+### To render all maps in the folder
 ```shell
 uv run plot_all_maps.py 
 ```
@@ -44,14 +59,10 @@ Each map can take up to around 60&nbsp;s to produce.
 
 ## Output
 
-Each Leaflet maps is saved in `output_relative_dir` as a self-contained HTML file.
+Each Leaflet map is saved in `output_relative_dir` as a self-contained HTML file.
 Open in a browser to view.
 
 NB: the HTML files can be large, up to about 150&nbsp;MB.
-
-### Screenshot (v0.5.0)
-
-![Screenshot of Altis map](docs/screenshot_050_altis.png)
 
 ### What's included in the maps
 
