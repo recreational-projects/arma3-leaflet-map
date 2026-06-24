@@ -49,8 +49,12 @@ def multi_polygon_group(
                 _plot_coords = [
                     PlotCoordinate.from_grad_meh_position(coord) for coord in polygon
                 ]
-                _add_polygon(plot_coords=_plot_coords, feature_group=feature_group,
-                             feature_kind=feature_kind, style=style)
+                _add_polygon(
+                    plot_coords=_plot_coords,
+                    feature_group=feature_group,
+                    feature_kind=feature_kind,
+                    style=style,
+                )
 
     return feature_group
 
@@ -80,8 +84,12 @@ def polygon_group(
                 if _validate_position(position)
             ]
             if _plot_coords:  # Don't plot polygon if no valid coords
-                _add_polygon(plot_coords=_plot_coords, feature_group=feature_group,
-                             feature_kind=feature_kind, style=style)
+                _add_polygon(
+                    plot_coords=_plot_coords,
+                    feature_group=feature_group,
+                    feature_kind=feature_kind,
+                    style=style,
+                )
 
     return feature_group
 
