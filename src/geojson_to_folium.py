@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import folium
 from arma3_offline_map_lib import geojson
-from folium import DivIcon
+from folium import DivIcon, FeatureGroup
 
 from src.plot_coordinate import PlotCoordinate
 from src.styles import (
@@ -15,12 +15,13 @@ from src.styles import (
     CircleStyle,
     LineStyle,
     MarkerStyle,
-    PolygonStyle,
     TextStyle,
 )
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Sized
+
+    from src.styles import PolygonStyle
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,14 +49,8 @@ def multi_polygon_group(
                 _plot_coords = [
                     PlotCoordinate.from_grad_meh_position(coord) for coord in polygon
                 ]
-                folium.Polygon(
-                    locations=[p.xy for p in _plot_coords],
-                    fill_color=style.color,
-                    fill=True,
-                    stroke=False,
-                    fill_opacity=1,
-                    tooltip=feature_kind,
-                ).add_to(feature_group)  # may be unnecessary to use?
+                _add_polygon(plot_coords=_plot_coords, feature_group=feature_group,
+                             feature_kind=feature_kind, style=style)
 
     return feature_group
 
@@ -85,16 +80,29 @@ def polygon_group(
                 if _validate_position(position)
             ]
             if _plot_coords:  # Don't plot polygon if no valid coords
-                folium.Polygon(
-                    locations=[p.xy for p in _plot_coords],
-                    fill_color=style.color,
-                    fill=True,
-                    stroke=False,
-                    fill_opacity=1,
-                    tooltip=feature_kind,
-                ).add_to(feature_group)  # may be unnecessary to use?
+                _add_polygon(plot_coords=_plot_coords, feature_group=feature_group,
+                             feature_kind=feature_kind, style=style)
 
     return feature_group
+
+
+def _add_polygon(
+    *,
+    plot_coords: list[PlotCoordinate],
+    feature_group: FeatureGroup,
+    feature_kind: str,
+    style: PolygonStyle,
+) -> None:
+    """Add a `folium.Polygon` to a `folium.FeatureGroup`."""
+    folium.Polygon(
+        locations=[p.xy for p in plot_coords],
+        fill_color=style.color,
+        fill=True,
+        fill_opacity=1,
+        color=style.color,
+        weight=style.weight,
+        tooltip=feature_kind,
+    ).add_to(feature_group)  # may be unnecessary to use?
 
 
 def _validate_position(position: geojson.Position) -> geojson.Position | None:
