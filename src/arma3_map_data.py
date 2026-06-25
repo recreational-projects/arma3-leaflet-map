@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
@@ -13,7 +12,7 @@ from arma3_offline_map_lib.geojson import (
     geojson_gz_files_in_dir,
     load_features_from_file,
 )
-from arma3_offline_map_lib.position_2d import Position2D
+from arma3_offline_map_lib.metadata import Metadata
 from rich.markup import escape
 
 from src import features_config
@@ -82,9 +81,9 @@ class _RootFeatures:
             world_name=world_name,
         )
 
-        all_root_feature_kinds = [
+        all_root_feature_kinds = {
             _get_feature_descriptor(fp) for fp in geojson_gz_files_in_dir(path)
-        ]
+        }
         ignored_root_feature_kinds = (
             all_root_feature_kinds
             - multipolygons_.keys()
@@ -111,18 +110,16 @@ class _RootFeatures:
 class Arma3MapData:
     """Container for GeoJSON data assembled from data source."""
 
-    world_name: str
-    world_size: int
-    grid_offset: Position2D
-    elevation_offset: float
-    preview_image_filepath: Path | None = None
+    metadata: Metadata
+    """Info from 'meta.json'."""
+    dem: DEM
+    """Digital Elevation Model."""
     root_features: _RootFeatures
     """Features from 'geojson' root folder."""
     roads: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     bridges: dict[str, list[geojson.Feature]] = field(default_factory=dict)
     locations: dict[str, list[geojson.Feature]] = field(default_factory=dict)
-    dem: DEM
-    """Digital Elevation Model."""
+    preview_image_filepath: Path | None = None
 
     @classmethod
     def from_data(cls, path: Path) -> Self | None:
@@ -142,9 +139,8 @@ class Arma3MapData:
             _LOGGER.error(log_msg)
             return None
 
-        metadata_ = json.loads((path / "meta.json").read_text())
-        world_name_ = metadata_["worldName"]
-
+        metadata_ = Metadata.from_file(path / "meta.json")
+        world_name_ = metadata_.world_name
         preview_image_filepath_ = path / "preview.png"
         if not preview_image_filepath_.is_file():
             log_msg = (
@@ -170,26 +166,26 @@ class Arma3MapData:
         log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
         return cls(
-            world_name=world_name_,
-            world_size=metadata_["worldSize"],
-            grid_offset=Position2D(metadata_["gridOffsetX"], metadata_["gridOffsetY"]),
-            elevation_offset=metadata_["elevationOffset"],
-            preview_image_filepath=preview_image_filepath_,
+            metadata=metadata_,
             root_features=root_features_,
+            dem=dem_,
+            preview_image_filepath=preview_image_filepath_,
             roads=roads_and_bridges["roads"],
             bridges=roads_and_bridges["bridges"],
             locations=locations_,
-            dem=dem_,
         )
 
     def render_map(self, export_path: Path) -> None:
         """Plot Folium map and save."""
-        log_text = escape(f"[{self.world_name}] rendering map...")
+        world_name_ = self.metadata.world_name
+        world_size_ = self.metadata.world_size
+
+        log_text = escape(f"[{world_name_}] rendering map...")
         log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
 
         _center = PlotCoordinate.from_grad_meh_position(
-            (self.world_size / 2, self.world_size / 2)
+            (world_size_ / 2, world_size_ / 2)
         )
         map_ = folium.Map(
             location=_center.xy,
@@ -201,12 +197,12 @@ class Arma3MapData:
         )
         if self.preview_image_filepath:
             embed_sat_map_overlay(
-                map_=map_, path=self.preview_image_filepath, map_size=self.world_size
+                map_=map_, path=self.preview_image_filepath, map_size=world_size_
             )
-        land_image_filepath_ = WORKING_PATH / f"{self.world_name}.png"
+        land_image_filepath_ = WORKING_PATH / f"{world_name_}.png"
         render_land_image(path=land_image_filepath_, dem=self.dem)
-        embed_land_image(map_=map_, path=land_image_filepath_, map_size=self.world_size)
-        log_msg = f"[{self.world_name}] land/sea image rendered and embedded."
+        embed_land_image(map_=map_, path=land_image_filepath_, map_size=world_size_)
+        log_msg = f"[{world_name_}] land/sea image rendered and embedded."
         _LOGGER.info(log_msg)
 
         plot_multipolygon_multi_series(
@@ -218,20 +214,20 @@ class Arma3MapData:
         plot_bridges(map_=map_, multi_series=self.bridges)
         plot_line_multi_series(map_=map_, multi_series=self.root_features.lines)
         plot_div_icon_multi_series(map_=map_, multi_series=self.locations)
-        plot_grid(map_=map_, map_size=self.world_size)
+        plot_grid(map_=map_, map_size=world_size_)
         folium.LayerControl().add_to(map_)
 
-        log_text = escape(f"[{self.world_name}] ...done.")
+        log_text = escape(f"[{world_name_}] ...done.")
         log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
 
-        save_filepath = export_path / f"{self.world_name}.html"
-        log_text = escape(f"[{self.world_name}] saving...")
+        save_filepath = export_path / f"{world_name_}.html"
+        log_text = escape(f"[{world_name_}] saving...")
         log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
 
         map_.save(save_filepath)
-        log_text = escape(f"[{self.world_name}] ...done.")
+        log_text = escape(f"[{world_name_}] ...done.")
         log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
 
@@ -265,9 +261,9 @@ def _load_locations(*, path: Path, world_name: str) -> dict[str, list[geojson.Fe
         _LOGGER.warning(log_msg)
         return {}
 
-    all_location_kinds = [
+    all_location_kinds = {
         _get_feature_descriptor(fp) for fp in geojson_gz_files_in_dir(path)
-    ]
+    }
     locations = load_features_from_dir(
         path=path,
         exclude=features_config.IGNORED_LOCATIONS,
