@@ -82,9 +82,9 @@ class _RootFeatures:
             world_name=world_name,
         )
 
-        all_root_feature_kinds = [
+        all_root_feature_kinds = {
             _get_feature_descriptor(fp) for fp in geojson_gz_files_in_dir(path)
-        ]
+        }
         ignored_root_feature_kinds = (
             all_root_feature_kinds
             - multipolygons_.keys()
@@ -265,9 +265,9 @@ def _load_locations(*, path: Path, world_name: str) -> dict[str, list[geojson.Fe
         _LOGGER.warning(log_msg)
         return {}
 
-    all_location_kinds = [
+    all_location_kinds = {
         _get_feature_descriptor(fp) for fp in geojson_gz_files_in_dir(path)
-    ]
+    }
     locations = load_features_from_dir(
         path=path,
         exclude=features_config.IGNORED_LOCATIONS,
