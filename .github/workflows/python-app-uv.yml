@@ -35,6 +35,6 @@ jobs:
         # by default: exit with error if rule violations
         run: uv run --locked ruff format
 
-      - name: Type check with ty
+      - name: Type check with pyrefly
         # by default: exit with error if rule violations
-        run: uv run --locked ty check --output-format=github
+        run: uv run --locked pyrefly check --output-format=github
