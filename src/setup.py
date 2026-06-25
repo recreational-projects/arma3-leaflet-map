@@ -51,10 +51,10 @@ def _duplicates(seq: Sequence[Any]) -> set[Any]:
 
 with (_BASE_PATH / "../config.toml").open(mode="rb") as f:
     config = tomllib.load(f)
-    INPUT_PATH = _BASE_PATH / config["input_relative_dir"]
-    WORKING_PATH = _BASE_PATH / config["working_relative_dir"]
-    OUTPUT_PATH = _BASE_PATH / config["output_relative_dir"]
-    PROCESS_UNSUPPORTED_MAPS = config["process_unsupported_maps"]
+    INPUT_PATH = _BASE_PATH / config["INPUT_RELATIVE_DIR"]
+    WORKING_PATH = _BASE_PATH / config["WORKING_RELATIVE_DIR"]
+    OUTPUT_PATH = _BASE_PATH / config["OUTPUT_RELATIVE_DIR"]
+    PROCESS_UNSUPPORTED_MAPS = config["PROCESS_UNSUPPORTED_MAPS"]
 
 WORKING_PATH.mkdir(exist_ok=True)
 OUTPUT_PATH.mkdir(exist_ok=True)

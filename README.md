@@ -72,3 +72,10 @@ NB: the HTML files can be large, up to about 150&nbsp;MB.
 - Text labels for each kind of location (settlements etc.)
 - NB: to keep file sizes and HTML rendering time manageable, layers are excluded
   if they would contain more than 1000 objects
+
+### Supplementary scripts
+
+#### Report data anomalies without rendering maps
+```shell
+uv run check_data_anomalies.py
+```
