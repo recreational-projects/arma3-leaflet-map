@@ -20,13 +20,13 @@ from src.plot import (
     embed_land_image,
     embed_sat_map_overlay,
     plot_bridges,
-    plot_div_icon_multi_series,
     plot_grid,
-    plot_line_multi_series,
-    plot_marker_multi_series,
-    plot_multipolygon_multi_series,
-    plot_polygon_multi_series,
+    plot_markers,
+    plot_multipolygons,
+    plot_non_road_lines,
+    plot_polygons,
     plot_roads,
+    plot_text_labels,
     render_land_image,
 )
 from src.plot_coordinate import PlotCoordinate
@@ -200,15 +200,13 @@ class Arma3MapData:
         log_msg = f"[{name_}] land/sea image rendered and embedded."
         _LOGGER.info(log_msg)
 
-        plot_multipolygon_multi_series(
-            map_=map_, multi_series=self.root_features.multipolygons
-        )
-        plot_polygon_multi_series(map_=map_, multi_series=self.root_features.polygons)
-        plot_marker_multi_series(map_=map_, multi_series=self.root_features.points)
+        plot_multipolygons(map_=map_, multi_series=self.root_features.multipolygons)
+        plot_polygons(map_=map_, multi_series=self.root_features.polygons)
+        plot_markers(map_=map_, multi_series=self.root_features.points)
         plot_roads(map_=map_, multi_series=self.roads)
         plot_bridges(map_=map_, multi_series=self.bridges)
-        plot_line_multi_series(map_=map_, multi_series=self.root_features.lines)
-        plot_div_icon_multi_series(map_=map_, multi_series=self.locations)
+        plot_non_road_lines(map_=map_, multi_series=self.root_features.lines)
+        plot_text_labels(map_=map_, multi_series=self.locations)
         plot_grid(map_=map_, map_size=size_)
         folium.LayerControl().add_to(map_)
 

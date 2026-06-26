@@ -11,6 +11,7 @@ from PIL import Image, ImageOps
 
 from src import styles
 from src.geojson_to_folium import (
+    house_group,
     marker_group,
     multi_polygon_group,
     poly_line_group,
@@ -31,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def embed_sat_map_overlay(*, map_: folium.Map, path: Path, map_size: int) -> None:
-    """Embed the satellite map in the map as an overlay."""
+    """Embed the satellite image in the map as an overlay."""
     max_ = PlotCoordinate.from_grad_meh_position((map_size, map_size))
     map_image_overlay = folium.raster_layers.ImageOverlay(
         image=str(path),
@@ -62,7 +63,7 @@ def embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
     """
     Embed the land/sea image in the map as a base layer.
 
-    Note the image is same resolution as heightmap and is not smoothed.
+    The image is the same resolution as the heightmap and is not smoothed.
     """
     max_ = PlotCoordinate.from_grad_meh_position((map_size, map_size))
     map_image_overlay = folium.raster_layers.ImageOverlay(
@@ -74,10 +75,10 @@ def embed_land_image(*, map_: folium.Map, path: Path, map_size: int) -> None:
     map_image_overlay.add_to(map_)
 
 
-def plot_multipolygon_multi_series(
+def plot_multipolygons(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
-    """TO DO."""
+    """Add all series of multipolygon features to the map."""
     for feature_kind, features in multi_series.items():
         # for forest, features is singleton
         style = styles.POLYGON_STYLES.get(feature_kind)
@@ -91,26 +92,31 @@ def plot_multipolygon_multi_series(
         ).add_to(map_)
 
 
-def plot_polygon_multi_series(
+def plot_polygons(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
-    """TO DO."""
+    """Add all series of polygon features to the map, handling 'house' separately."""
     for feature_kind, features in multi_series.items():
-        style = styles.POLYGON_STYLES.get(feature_kind)
-        if not style:
-            log_msg = f"- No style in POLYGON_STYLES for '{feature_kind}'."
-            _LOGGER.error(log_msg)
-            style = styles.PolygonStyle()
+        if feature_kind == "house":
+            group = house_group(feature_kind=feature_kind, features=features)
+        else:
+            style = styles.POLYGON_STYLES.get(feature_kind)
+            if not style:
+                log_msg = f"- No style in POLYGON_STYLES for '{feature_kind}'."
+                _LOGGER.error(log_msg)
+                style = styles.PolygonStyle()
 
-        polygon_group(feature_kind=feature_kind, features=features, style=style).add_to(
-            map_
-        )
+            group = polygon_group(
+                feature_kind=feature_kind, features=features, style=style
+            )
+
+        group.add_to(map_)
 
 
-def plot_marker_multi_series(
+def plot_markers(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
-    """TO DO."""
+    """Add all series of marker features to the map."""
     for feature_kind, features in multi_series.items():
         style = styles.POINT_STYLES.get(feature_kind)
         if not style:
@@ -127,7 +133,7 @@ def plot_roads(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """
-    Plot all road features in style order (minor -> major).
+    Add all series of road features to the map in style order (minor -> major).
 
     If any road kinds don't have a style, they are plotted last with a default style.
     """
@@ -157,7 +163,7 @@ def plot_bridges(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
     """
-    Plot all bridge features in style order (minor -> major).
+    Add all bridge feature series to the map in style order (minor -> major).
 
     If any bridge kinds don't have a style, they are plotted last with a default style.
     """
@@ -185,10 +191,10 @@ def plot_bridges(
             group.add_to(map_)
 
 
-def plot_line_multi_series(
+def plot_non_road_lines(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
-    """TO DO."""
+    """Add all series of (non-road) line features to the map."""
     for feature_kind, features in multi_series.items():
         style = styles.LINE_STYLES.get(feature_kind)
         if not style:
@@ -201,10 +207,10 @@ def plot_line_multi_series(
         ).add_to(map_)
 
 
-def plot_div_icon_multi_series(
+def plot_text_labels(
     *, map_: folium.Map, multi_series: Mapping[str, Collection[geojson.Feature]]
 ) -> None:
-    """TO DO."""
+    """Add all series of text labels to the map."""
     for feature_kind, features in multi_series.items():
         style = styles.TEXT_STYLES.get(feature_kind)
         if not style:
