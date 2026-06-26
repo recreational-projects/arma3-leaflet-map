@@ -15,13 +15,13 @@ from src.styles import (
     CircleStyle,
     LineStyle,
     MarkerStyle,
+    PolygonStyle,
     TextStyle,
 )
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Sized
 
-    from src.styles import PolygonStyle
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,15 +46,42 @@ def multi_polygon_group(
 
         for multipolygon in f.geometry.coordinates:
             for polygon in multipolygon:
-                _plot_coords = [
-                    PlotCoordinate.from_grad_meh_position(coord) for coord in polygon
-                ]
                 _add_polygon(
-                    plot_coords=_plot_coords,
+                    coords=polygon,
                     feature_group=feature_group,
                     feature_kind=feature_kind,
                     style=style,
                 )
+
+    return feature_group
+
+
+def house_group(
+    *, feature_kind: str, features: Collection[geojson.Feature]
+) -> folium.FeatureGroup:
+    """
+    Return `folium.FeatureGroup` of `folium.Polygon`s for 'house' layer
+    from GeoJSON features with `Polygon` geometry.
+    """
+    feature_group = _empty_feature_group(
+        feature_kind=feature_kind,
+        features=features,
+    )
+    for f in features:
+        if not isinstance(f.geometry, geojson.Polygon):
+            err_msg = (
+                f"Unexpected non-`Polygon` geometry "
+                f"when plotting '{feature_kind}' as Polygon."
+            )
+            raise TypeError(err_msg)
+
+        for polygon in f.geometry.coordinates:
+            _add_polygon(
+                coords=polygon,
+                feature_group=feature_group,
+                feature_kind=feature_kind,
+                style=PolygonStyle(color=f"rgb{tuple(f.properties['color'])}"),
+            )
 
     return feature_group
 
@@ -78,32 +105,31 @@ def polygon_group(
             raise TypeError(err_msg)
 
         for polygon in f.geometry.coordinates:
-            _plot_coords = [
-                PlotCoordinate.from_grad_meh_position(position)
-                for position in polygon
-                if _validate_position(position)
-            ]
-            if _plot_coords:  # Don't plot polygon if no valid coords
-                _add_polygon(
-                    plot_coords=_plot_coords,
-                    feature_group=feature_group,
-                    feature_kind=feature_kind,
-                    style=style,
-                )
+            _add_polygon(
+                coords=polygon,
+                feature_group=feature_group,
+                feature_kind=feature_kind,
+                style=style,
+            )
 
     return feature_group
 
 
 def _add_polygon(
     *,
-    plot_coords: list[PlotCoordinate],
+    coords: list[tuple[float, float]],
     feature_group: FeatureGroup,
     feature_kind: str,
     style: PolygonStyle,
 ) -> None:
-    """Add a `folium.Polygon` to a `folium.FeatureGroup`."""
+    """Add a scaled `folium.Polygon` to a `folium.FeatureGroup`."""
+    plot_coords_ = [
+        PlotCoordinate.from_grad_meh_position(position)
+        for position in coords
+        if _validate_position(position)
+    ]
     folium.Polygon(
-        locations=[p.xy for p in plot_coords],
+        locations=[p.xy for p in plot_coords_],
         fill_color=style.color,
         fill=True,
         fill_opacity=1,

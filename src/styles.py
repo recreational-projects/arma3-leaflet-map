@@ -174,7 +174,7 @@ BRIDGE_STYLES: dict[str, PolygonStyle] = {
 
 POLYGON_STYLES: dict[str, PolygonStyle] = {
     "forest": PolygonStyle(color="green", show=False),
-    "house": PolygonStyle(color="gray"),
     "river": PolygonStyle(color=f"rgb{WATER_COLOR}", weight=1),
     "runway": PolygonStyle(color="gray"),
 }
+"""'house' layer doesn't have a style, color is retrieved from GeoJSON."""
