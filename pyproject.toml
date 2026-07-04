@@ -8,7 +8,7 @@ dependencies = [
     "folium>=0.20.0",
     "matplotlib>=3.11.0",
     "msgspec>=0.21.1",
-    "pillow>=12.2.0",
+    "pillow>=12.3.0",
     "rich>=15.0.0",
 ]
 extend-safe-fixes = [
