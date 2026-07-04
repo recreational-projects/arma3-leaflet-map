@@ -4,10 +4,10 @@ A proof of concept to create Arma 3 [Leaflet](https://leafletjs.com/) interactiv
 from [Gruppe Adler Map Exporter](https://github.com/gruppe-adler/grad_meh) ('grad_meh')
 output.
 
-Uses the [Folium](https://python-visualization.github.io/folium/) 
+Uses the [Folium](https://python-visualization.github.io/folium/)
 Leaflet library to produce the maps in Python.
 
-**How is this different from [Arma3Map](https://atlas.plan-ops.fr/maps/arma3), 
+**How is this different from [Arma3Map](https://atlas.plan-ops.fr/maps/arma3),
 which powers [PLANOPS Atlas](https://atlas.plan-ops.fr/maps/arma3)?**
 
 - Utilizes more of Leaflet's capabilities; text and objects are vector graphics,
@@ -47,12 +47,12 @@ Edit `config.toml` so that:
 ### To render a single map:
 Edit `plot_map.py` so that `MAP_NAME` points to the required map, then:
 ```shell
-uv run plot_map.py 
+uv run plot_map.py
 ```
 
 ### To render all maps in the folder
 ```shell
-uv run plot_all_maps.py 
+uv run plot_all_maps.py
 ```
 
 Each map can take up to around 60&nbsp;s to produce.
