@@ -223,7 +223,7 @@ def plot_text_labels(
         ).add_to(map_)
 
 
-def plot_grid(map_: folium.Map, map_size: int) -> None:
+def plot_grid(*, map_: folium.Map, map_size: int) -> None:
     """Plot 1 km grid."""
     label_indent = 100.0
     for i in range((map_size // 1000) + 1):

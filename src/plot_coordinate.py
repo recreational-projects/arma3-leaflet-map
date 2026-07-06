@@ -36,19 +36,14 @@ class PlotCoordinate:
         to `PlotCoordinate` (long, lat).
 
         Simple projection using equatorial degrees-to-meters ratio.
-
-        Ignores any z. Note axis order switch.
         """
         pos_2d = Position2D.from_geojson_position(position)
-        return cls(
-            x=pos_2d.x / _DEGREES_LATITUDE_TO_M_AT_EQUATOR,
-            y=pos_2d.y / _DEGREES_LONGITUDE_TO_M_AT_EQUATOR,
-        )
+        return cls.from_a3_position(pos_2d)
 
     @classmethod
     def from_a3_position(cls, position: Position2D) -> Self:
         """
-        Convert Arma 3 `Point2D` (meter units, arbitrary origin)
+        Convert Arma 3 `Position2D` (meter units, arbitrary origin)
         to `PlotCoordinate` (long, lat).
 
         Simple projection using equatorial degrees-to-meters ratio.

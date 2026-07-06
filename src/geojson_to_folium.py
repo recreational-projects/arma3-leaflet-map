@@ -117,7 +117,7 @@ def polygon_group(
 
 def _add_polygon(
     *,
-    coords: list[tuple[float, float]],
+    coords: list[geojson.Position],
     feature_group: FeatureGroup,
     feature_kind: str,
     style: PolygonStyle,
