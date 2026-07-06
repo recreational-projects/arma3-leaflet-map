@@ -230,8 +230,11 @@ def text_marker_group(
     Return `folium.FeatureGroup` of `folium.Marker`s
     from GeoJSON features with `Point` geometry.
     """
+    feature_kind_label = (
+        style.kind_label if style.kind_label is not None else feature_kind
+    )
     feature_group = _empty_feature_group(
-        feature_kind=feature_kind, features=features, show=True
+        feature_kind=feature_kind_label.capitalize(), features=features, show=True
     )
     for f in features:
         if not isinstance(f.geometry, geojson.Point):
@@ -243,12 +246,15 @@ def text_marker_group(
 
         _coords = f.geometry.coordinates
         _plot_coords = PlotCoordinate.from_grad_meh_position(_coords)
-        _popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
-        _tooltip_text = feature_kind
         name = f.properties.get("name")
-        if name is not None:
-            _popup_text += f"•&nbsp;name: '{name}'<br>"
-            _tooltip_text += f": '{name}'"
+        if name == "":
+            plot_name = f"{feature_kind_label}"
+            _popup_text = f"•&nbsp;feature_kind: '{feature_kind}'<br>"
+            _tooltip_text = feature_kind_label
+        else:
+            plot_name = f"{name} ({feature_kind_label})"
+            _popup_text = f"•&nbsp;name: '{name}'<br>"
+            _tooltip_text = f"{name} ({feature_kind_label})"
 
         _popup_text += f"•&nbsp;coordinates: ({_coords[0]:.1f}, {_coords[1]:.1f})"
         _html_tag = f"<div style='white-space:nowrap; color: {style.color}"
@@ -259,7 +265,7 @@ def text_marker_group(
             _html_tag += f"; font-size: {style.font_size}"
 
         _html_tag += ";'>"
-        _html = f"{_html_tag}{name}</>"
+        _html = f"{_html_tag}{plot_name}</>"
         marker = folium.Marker(
             location=_plot_coords.xy,
             popup=_popup_text,

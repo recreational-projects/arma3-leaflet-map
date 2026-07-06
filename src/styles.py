@@ -96,6 +96,8 @@ class TextStyle(BaseStyle):
 
     font_size: str | None = None
     font_style: str | None = None
+    kind_label: str | None = None
+    """Plot this instead of the native feature kind."""
 
 
 GRID_STYLE = LineStyle(color="black", weight=1, opacity=0.25)
@@ -135,16 +137,20 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "rock": CircleMarkerStyle(color="black", radius=3),
 }
 TEXT_STYLES = {
-    "namecitycapital": TextStyle(color="black", font_size="1.5rem"),
-    "namecity": TextStyle(color="black", font_size="1.25rem"),
-    "namevillage": TextStyle(color="black"),
-    "namelocal": TextStyle(color="dimgray", font_style="oblique"),
-    "namemarine": TextStyle(color="blue"),
+    "namecitycapital": TextStyle(
+        color="black", font_size="1.5rem", kind_label="capital city"
+    ),
+    "namecity": TextStyle(color="black", font_size="1.25rem", kind_label="city"),
+    "namevillage": TextStyle(color="black", kind_label="village"),
+    "namelocal": TextStyle(
+        color="dimgray", font_style="oblique", kind_label="local name"
+    ),
+    "namemarine": TextStyle(color="blue", kind_label="marine name"),
     # "namewaterlocal": TextStyle(color="blue", font_style="oblique"),
     "airport": TextStyle(color="dimgray"),
     "hill": TextStyle(color="dimgray"),  # not always named
     "rockarea": TextStyle(color="dimgray"),  # not always named?
-    "citycenter": TextStyle(),  # not named?
+    "citycenter": TextStyle(kind_label="city center"),  # not named?
     "vegetationbroadleaf": TextStyle(color="green"),
     "vegetationvineyard": TextStyle(color="green"),
     "vegetationfir": TextStyle(color="green"),
