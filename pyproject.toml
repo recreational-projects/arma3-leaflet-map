@@ -19,7 +19,7 @@ extend-safe-fixes = [
 dev = [
     "pre-commit>=4.6.0",
     "pyrefly>=1.1.1",
-    "ruff>=0.15.20",
+    "ruff>=0.15.21",
 ]
 
 [tool.ruff.lint]
