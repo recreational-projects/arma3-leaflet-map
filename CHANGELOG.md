@@ -7,10 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [UNRELEASED] - tbc
 
+### Added
+
+- Logging message improvements
+ 
 ### Changed
 
 - Don't allow line breaks in text labels
-
+- Dependencies: require pillow >= 12.3.0
 
 ## [0.6.0] - 2026-07-06
 

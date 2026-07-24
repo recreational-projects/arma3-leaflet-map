@@ -113,15 +113,15 @@ class Arma3MapData:
             _LOGGER.error(log_msg)
             return None
 
+        metadata_path = path / "meta.json"
+        if not metadata_path.is_file():
+            log_msg = f"[{path.stem}] can't find {metadata_path}; skipping."
+            _LOGGER.error(log_msg)
+            return None
+
         log_text = escape(f"[{path.stem}] loading data...")
         log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
-
-        metadata_path = path / "meta.json"
-        if not metadata_path.is_file():
-            log_msg = f"[{path.stem}] can't find 'meta.json'; skipping."
-            _LOGGER.error(log_msg)
-            return None
 
         metadata_ = Metadata.from_file(metadata_path)
         name_ = metadata_.world_name
