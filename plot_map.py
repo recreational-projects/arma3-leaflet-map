@@ -2,6 +2,7 @@
 
 import logging
 
+from src.arma3_leaflet_map import Arma3LeafletMap
 from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
 from src.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
@@ -19,7 +20,8 @@ def main() -> None:
 
     map_data = Arma3MapData.from_data(INPUT_PATH / MAP_NAME)
     if map_data:
-        map_data.render_map(OUTPUT_PATH)
+        map_ = Arma3LeafletMap(map_data)
+        map_.render(OUTPUT_PATH)
 
 
 if __name__ == "__main__":
