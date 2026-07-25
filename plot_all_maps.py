@@ -69,7 +69,10 @@ def main() -> None:
             while not progress.finished:
                 for fp in sorted(dirs_to_plot):
                     map_data = Arma3MapData.from_data(fp)
-                    if map_data:
+                    if not map_data:
+                        log_msg = f"Unexpected data issue with {fp}; skipping."
+                        logger.error(log_msg)
+                    else:
                         map_ = Arma3LeafletMap(map_data)
                         map_.render(OUTPUT_PATH)
 
