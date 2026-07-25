@@ -17,9 +17,9 @@ extend-safe-fixes = [
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.6.0",
+    "pre-commit>=4.6.1",
     "pyrefly>=1.1.1",
-    "ruff>=0.15.20",
+    "ruff>=0.16.0",
 ]
 
 [tool.ruff.lint]
@@ -31,9 +31,10 @@ ignore = [
     "D203",    # incorrect-blank-line-before-class
     "D212",    # multi-line-summary-first-line
     # Other
-    "ERA001",  # commented-out-code
+    "CPY001",  # missing-copyright-notice
     "D105",  # undocumented-magic-method
     "D205",  # missing-blank-line-after-summary
+    "ERA001",  # commented-out-code
     "N806",  # non-lowercase-variable-in-function
     "PLR0913", # too-many-arguments
 ]
