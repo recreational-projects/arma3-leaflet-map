@@ -19,9 +19,12 @@ def main() -> None:
     logger.info(log_msg)
 
     map_data = Arma3MapData.from_data(INPUT_PATH / MAP_NAME)
-    if map_data:
-        map_ = Arma3LeafletMap(map_data)
-        map_.render(OUTPUT_PATH)
+    if not map_data:
+        err_msg = f"Unexpected data issue with {INPUT_PATH / MAP_NAME}."
+        raise RuntimeError(err_msg)
+
+    map_ = Arma3LeafletMap(map_data)
+    map_.render(OUTPUT_PATH)
 
 
 if __name__ == "__main__":
