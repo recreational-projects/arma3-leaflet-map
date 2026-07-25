@@ -7,37 +7,45 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 import folium
+import shapely
 from arma3_offline_map_lib.position_2d import Position2D
 from PIL import Image, ImageOps
 from rich.markup import escape
 
 from src import styles
-from src.geojson_to_folium import (
-    house_group,
-    marker_group,
-    multi_polygon_group,
-    poly_line_group,
-    polygon_group,
-    text_marker_group,
-)
-from src.plot_coordinate import PlotCoordinate
 from src.setup import WORKING_PATH
+
+from . import folium_from_control_points, folium_from_geojson, folium_from_shapely
+from .plot_coordinate import PlotCoordinate
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from src.arma3_map_data import Arma3MapData
+    from .arma3_map_data import Arma3MapData
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(kw_only=True, frozen=True)
+class TerritoryControlPoint:
+    """Represents a control point on the map."""
+
+    # init:
+    name: str
+    position: Position2D
 
 
 @dataclass
 class Arma3LeafletMap:
     """TODO."""
 
+    # init:
     data: Arma3MapData
+
+    # non-init:
     folium_map: folium.Map = field(init=False)
+    territory_control_points: set[TerritoryControlPoint] = field(default_factory=set)
 
     def __post_init__(self) -> None:
         size_ = self.data.metadata.world_size
@@ -73,6 +81,10 @@ class Arma3LeafletMap:
         self._plot_roads()
         self._plot_bridges()
         self._plot_non_road_lines()
+        if self.territory_control_points:
+            self._plot_territories()
+            self._plot_territory_control_points()
+
         self._plot_text_labels()
         self._plot_grid()
         folium.LayerControl().add_to(self.folium_map)
@@ -119,7 +131,7 @@ class Arma3LeafletMap:
         onebit_im = Image.fromarray(self.data.dem.land)
         grayscale_im = onebit_im.convert(mode="L")
         color_im = ImageOps.colorize(
-            grayscale_im, black=styles.WATER_COLOR, white=styles.LAND_COLOR
+            grayscale_im, black=styles.WATER_COLOR_RGB, white=styles.LAND_COLOR_RGB
         )
         color_im.save(path)
 
@@ -149,7 +161,7 @@ class Arma3LeafletMap:
                 _LOGGER.error(log_msg)
                 style = styles.PolygonStyle()
 
-            multi_polygon_group(
+            folium_from_geojson.polygon_group_from_multi_polygons(
                 feature_kind=feature_kind, features=features, style=style
             ).add_to(self.folium_map)
 
@@ -161,7 +173,9 @@ class Arma3LeafletMap:
         """
         for feature_kind, features in self.data.root_features.polygons.items():
             if feature_kind == "house":
-                group = house_group(feature_kind=feature_kind, features=features)
+                group = folium_from_geojson.polygon_group_from_house(
+                    feature_kind=feature_kind, features=features
+                )
             else:
                 style = styles.POLYGON_STYLES.get(feature_kind)
                 if not style:
@@ -169,7 +183,7 @@ class Arma3LeafletMap:
                     _LOGGER.error(log_msg)
                     style = styles.PolygonStyle()
 
-                group = polygon_group(
+                group = folium_from_geojson.polygon_group_from_polygons(
                     feature_kind=feature_kind, features=features, style=style
                 )
 
@@ -184,7 +198,7 @@ class Arma3LeafletMap:
                 _LOGGER.error(log_msg)
                 style = styles.MarkerStyle()
 
-            marker_group(
+            folium_from_geojson.marker_group(
                 feature_kind=feature_kind, features=features, style=style
             ).add_to(self.folium_map)
 
@@ -199,7 +213,7 @@ class Arma3LeafletMap:
         for feature_kind, style in styles.ROAD_STYLES.items():
             features = multi_series_.get(feature_kind)
             if features:
-                group = poly_line_group(
+                group = folium_from_geojson.poly_line_group(
                     feature_kind=feature_kind, features=features, style=style
                 )
                 group.add_to(self.folium_map)
@@ -211,7 +225,7 @@ class Arma3LeafletMap:
             _LOGGER.error(log_msg)
             features = multi_series_.get(feature_kind)
             if features:
-                group = poly_line_group(
+                group = folium_from_geojson.poly_line_group(
                     feature_kind=feature_kind,
                     features=features,
                     style=styles.LineStyle(),
@@ -229,7 +243,7 @@ class Arma3LeafletMap:
         for feature_kind, style in styles.BRIDGE_STYLES.items():
             features = multi_series_.get(feature_kind)
             if features:
-                group = polygon_group(
+                group = folium_from_geojson.polygon_group_from_polygons(
                     feature_kind=feature_kind, features=features, style=style
                 )
                 group.add_to(self.folium_map)
@@ -241,7 +255,7 @@ class Arma3LeafletMap:
             _LOGGER.error(log_msg)
             features = multi_series_.get(feature_kind)
             if features:
-                group = polygon_group(
+                group = folium_from_geojson.polygon_group_from_polygons(
                     feature_kind=feature_kind,
                     features=features,
                     style=styles.PolygonStyle(),
@@ -257,9 +271,42 @@ class Arma3LeafletMap:
                 _LOGGER.error(log_msg)
                 style = styles.LineStyle()
 
-            poly_line_group(
+            folium_from_geojson.poly_line_group(
                 feature_kind=feature_kind, features=features, style=style
             ).add_to(self.folium_map)
+
+    def _plot_territories(self) -> None:
+        """Add boundaries of territories around control points to the map."""
+        points = shapely.MultiPoint(
+            [
+                shapely.Point(p.position.x, p.position.y)
+                for p in self.territory_control_points
+            ]
+        )
+        voronoi_polygons = shapely.voronoi_polygons(geometry=points)
+        _world_size = self.data.metadata.world_size
+        territories = shapely.MultiPolygon(
+            [
+                shapely.clip_by_rect(
+                    geometry=p, xmin=0, ymin=0, xmax=_world_size, ymax=_world_size
+                )
+                for p in voronoi_polygons.geoms
+            ]
+        )
+        group = folium_from_shapely.polygon_group(
+            feature_kind="territories",
+            polygons=territories,
+            style=styles.TERRITORY_STYLE,
+        )
+        group.add_to(self.folium_map)
+
+    def _plot_territory_control_points(self) -> None:
+        """Add control points to the map."""
+        folium_from_control_points.text_marker_group(
+            feature_kind="Control points",
+            control_points=self.territory_control_points,
+            style=styles.CONTROL_POINT_STYLE,
+        ).add_to(self.folium_map)
 
     def _plot_text_labels(self) -> None:
         """Add all series of text labels to the map."""
@@ -270,7 +317,7 @@ class Arma3LeafletMap:
                 _LOGGER.error(log_msg)
                 style = styles.TextStyle()
 
-            text_marker_group(
+            folium_from_geojson.text_marker_group(
                 feature_kind=feature_kind, features=features, style=style
             ).add_to(self.folium_map)
 

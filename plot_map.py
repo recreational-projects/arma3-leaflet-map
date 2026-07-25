@@ -2,9 +2,9 @@
 
 import logging
 
-from src.arma3_leaflet_map import Arma3LeafletMap
-from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
+from src.model.arma3_leaflet_map import Arma3LeafletMap
+from src.model.arma3_map_data import Arma3MapData
 from src.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
 
 MAP_NAME = "stratis"

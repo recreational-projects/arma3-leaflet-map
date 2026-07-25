@@ -10,6 +10,7 @@ dependencies = [
     "msgspec>=0.21.1",
     "pillow>=12.3.0",
     "rich>=15.0.0",
+    "shapely>=2.1.2",
 ]
 extend-safe-fixes = [
     "TC", # flake8-type-checking
@@ -19,6 +20,7 @@ extend-safe-fixes = [
 dev = [
     "pre-commit>=4.6.1",
     "pyrefly>=1.1.1",
+    "pytest>=9.1.1",
     "ruff>=0.16.0",
 ]
 
