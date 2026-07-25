@@ -17,7 +17,7 @@ _DEGREES_LONGITUDE_TO_M_AT_EQUATOR = 111320
 
 @dataclass(kw_only=True, frozen=True)
 class PlotCoordinate:
-    """Longitude, latitude."""
+    """Coordinate in longitude, latitude terms for plotting in a Folium map."""
 
     x: float
     """Longitude."""
@@ -33,11 +33,11 @@ class PlotCoordinate:
     def from_grad_meh_position(cls, position: geojson.Position) -> Self:
         """
         Convert grad_meh position (GeoJSON y, x but meter units, arbitrary origin)
-        to `PlotCoordinate` (long, lat).
+        to `PlotCoordinate` (long, lat i.e. x, y).
 
         Simple projection using equatorial degrees-to-meters ratio.
 
-        Ignores any z. Note axis order switch.
+        Ignores any z.
         """
         pos_2d = Position2D.from_geojson_position(position)
         return cls(
