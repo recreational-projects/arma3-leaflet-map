@@ -5,15 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
-## [UNRELEASED] - tbc
+## [0.7.0] - 2026-27-06
 
 ### Added
 
-- Logging message improvements
+- Experimental support for plotting territories around points
+- Improvements to error and logging messages
 
 ### Changed
 
 - Don't allow line breaks in text labels
+- Require Python >=3.13
 - Dependencies: require pillow >= 12.3.0
 
 ## [0.6.0] - 2026-07-06
@@ -41,5 +43,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Interim release
 
+[0.7.0]: https://github.com/recreational-projects/arma3-leaflet-map/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/recreational-projects/arma3-leaflet-map/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/recreational-projects/arma3-leaflet-map/releases/tag/v0.5.0
