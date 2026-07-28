@@ -71,8 +71,9 @@ def main() -> None:
         raise RuntimeError(err_msg)
 
     cp_data = [x for xs in CONTROL_POINTS.values() for x in xs]
-    control_points = control_points_from_data(cp_data)
-    map_ = Arma3LeafletMap(map_data, territory_control_points=control_points)
+    map_ = Arma3LeafletMap(
+        map_data, territory_control_points=control_points_from_data(cp_data)
+    )
     map_.render(OUTPUT_PATH)
 
 
@@ -81,10 +82,8 @@ def control_points_from_data(cp_data: list[DictNode]) -> set[TerritoryControlPoi
     control_points: set[TerritoryControlPoint] = set()
     for cp in cp_data:
         name_ = cp["name"]
-        position_ = cp["position"]
-        control_points.add(
-            TerritoryControlPoint(name=name_, position=Position2D(**position_))
-        )
+        position_ = Position2D(**cp["position"])
+        control_points.add(TerritoryControlPoint(name=name_, position=position_))
 
     return control_points
 

@@ -17,23 +17,23 @@ _DEGREES_LONGITUDE_TO_M_AT_EQUATOR = 111320
 
 @dataclass(kw_only=True, frozen=True)
 class PlotCoordinate:
-    """Coordinate in longitude, latitude terms for plotting in a Folium map."""
+    """Coordinate in lat/lon terms for plotting in a Folium map."""
 
-    x: float
+    lon: float
     """Longitude."""
-    y: float
+    lat: float
     """Latitude."""
 
     @property
-    def xy(self) -> tuple[float, float]:
-        """Return (x, y) tuple."""
-        return self.x, self.y
+    def lat_lon(self) -> tuple[float, float]:
+        """Return (lat, lon) tuple as required by Folium."""
+        return self.lat, self.lon
 
     @classmethod
     def from_grad_meh_position(cls, position: geojson.Position) -> Self:
         """
         Convert grad_meh position (GeoJSON y, x but meter units, arbitrary origin)
-        to `PlotCoordinate` (long, lat i.e. x, y).
+        to `PlotCoordinate`.
 
         Simple projection using equatorial degrees-to-meters ratio.
 
@@ -41,19 +41,19 @@ class PlotCoordinate:
         """
         pos_2d = Position2D.from_geojson_position(position)
         return cls(
-            x=pos_2d.x / _DEGREES_LATITUDE_TO_M_AT_EQUATOR,
-            y=pos_2d.y / _DEGREES_LONGITUDE_TO_M_AT_EQUATOR,
+            lon=pos_2d.x / _DEGREES_LONGITUDE_TO_M_AT_EQUATOR,
+            lat=pos_2d.y / _DEGREES_LATITUDE_TO_M_AT_EQUATOR,
         )
 
     @classmethod
     def from_a3_position(cls, position: Position2D) -> Self:
         """
-        Convert Arma 3 `Point2D` (meter units, arbitrary origin)
-        to `PlotCoordinate` (long, lat).
+        Convert Arma 3 position (meter units, arbitrary origin)
+        to `PlotCoordinate`.
 
         Simple projection using equatorial degrees-to-meters ratio.
         """
         return cls(
-            x=position.x / _DEGREES_LATITUDE_TO_M_AT_EQUATOR,
-            y=position.y / _DEGREES_LONGITUDE_TO_M_AT_EQUATOR,
+            lon=position.x / _DEGREES_LONGITUDE_TO_M_AT_EQUATOR,
+            lat=position.y / _DEGREES_LATITUDE_TO_M_AT_EQUATOR,
         )

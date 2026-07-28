@@ -39,7 +39,7 @@ def create_polygon(
         style: the style to use for the polygon
     """
     return folium.Polygon(
-        locations=[p.xy for p in plot_coords],
+        locations=[p.lat_lon for p in plot_coords],
         fill_color=style.fill_color,
         fill=style.fill,
         fill_opacity=style.fill_opacity,
