@@ -45,7 +45,7 @@ def text_marker_group(
         name_ = control_point.name.replace("_", " ").capitalize()
         _html = f"{html_tag_}{name_}</>"
         marker = folium.Marker(
-            location=plot_coords.xy,
+            location=plot_coords.lat_lon,
             icon=folium.DivIcon(html=_html),
         )
         marker.add_to(feature_group)

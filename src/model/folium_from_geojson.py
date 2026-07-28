@@ -141,7 +141,7 @@ def poly_line_group(
             for coord in line_string_geometry.coordinates
         ]
         folium.PolyLine(
-            locations=[p.xy for p in _plot_coords],
+            locations=[p.lat_lon for p in _plot_coords],
             color=style.color,
             weight=style.weight,
             dash_array=style.dash_array,
@@ -192,7 +192,7 @@ def text_marker_group(
         _html_tag += ";'>"
         _html = f"{_html_tag}{name}</>"
         marker = folium.Marker(
-            location=_plot_coords.xy,
+            location=_plot_coords.lat_lon,
             popup=_popup_text,
             tooltip=_tooltip_text,
             icon=folium.DivIcon(html=_html),
@@ -289,7 +289,7 @@ def _create_point_marker(
 
     if isinstance(style, CircleStyle):
         return folium.Circle(
-            location=plot_coordinate.xy,
+            location=plot_coordinate.lat_lon,
             radius=style.radius,
             stroke=False,
             fill=True,
@@ -301,7 +301,7 @@ def _create_point_marker(
 
     if isinstance(style, CircleMarkerStyle):
         return folium.CircleMarker(
-            location=plot_coordinate.xy,
+            location=plot_coordinate.lat_lon,
             radius=style.radius,
             color=style.color,
             stroke=False,
@@ -313,7 +313,7 @@ def _create_point_marker(
 
     marker_icon = folium.Icon(prefix="fa", icon=style.icon_name, color=style.color)
     return folium.Marker(
-        location=plot_coordinate.xy,
+        location=plot_coordinate.lat_lon,
         popup=popup_text,
         tooltip=tooltip_text,
         icon=marker_icon,

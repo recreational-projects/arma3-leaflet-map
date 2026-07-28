@@ -32,7 +32,7 @@ def polygon_group(
     )
     for polygon in polygons.geoms:
         plot_coords_ = [
-            PlotCoordinate.from_a3_position(Position2D(*coord))
+            PlotCoordinate.from_a3_position(Position2D(x=coord[0], y=coord[1]))
             for coord in polygon.exterior.coords
         ]
         create_polygon(

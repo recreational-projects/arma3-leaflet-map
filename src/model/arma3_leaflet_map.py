@@ -51,7 +51,7 @@ class Arma3LeafletMap:
         size_ = self.data.metadata.world_size
         center_ = PlotCoordinate.from_grad_meh_position((size_ / 2, size_ / 2))
         self.folium_map = folium.Map(
-            location=center_.xy,
+            location=center_.lat_lon,
             zoom_start=13,
             control_scale=True,  # Show a scale on the bottom of the map.
             prefer_canvas=True,  # for vector layers instead of SVG
@@ -114,7 +114,7 @@ class Arma3LeafletMap:
         max_ = PlotCoordinate.from_grad_meh_position((size_, size_))
         map_image_overlay = folium.raster_layers.ImageOverlay(
             image=str(path),
-            bounds=((0, 0), max_.xy),
+            bounds=((0, 0), max_.lat_lon),
             name="Preview satmap",
             overlay=True,
             show=False,
@@ -145,7 +145,7 @@ class Arma3LeafletMap:
         max_ = PlotCoordinate.from_grad_meh_position((size_, size_))
         map_image_overlay = folium.raster_layers.ImageOverlay(
             image=str(path),
-            bounds=((0, 0), max_.xy),
+            bounds=((0, 0), max_.lat_lon),
             name="Land/sea image",
             overlay=False,
         )
@@ -328,8 +328,10 @@ class Arma3LeafletMap:
             distance = 1000 * i
             h_line = folium.vector_layers.PolyLine(
                 locations=[
-                    PlotCoordinate.from_grad_meh_position((0, distance)).xy,
-                    PlotCoordinate.from_grad_meh_position((map_size_, distance)).xy,
+                    PlotCoordinate.from_grad_meh_position((0, distance)).lat_lon,
+                    PlotCoordinate.from_grad_meh_position(
+                        (map_size_, distance)
+                    ).lat_lon,
                 ],
                 color=styles.GRID_STYLE.color,
                 weight=styles.GRID_STYLE.weight,
@@ -338,13 +340,15 @@ class Arma3LeafletMap:
             h_line.add_to(self.folium_map)
             label_indent_ = 100.0
             self._add_text_marker(
-                a3_position=Position2D(distance, label_indent_),
+                a3_position=Position2D(x=distance, y=label_indent_),
                 text=f"{i:02}",
             )
             v_line = folium.vector_layers.PolyLine(
                 locations=[
-                    PlotCoordinate.from_grad_meh_position((distance, 0)).xy,
-                    PlotCoordinate.from_grad_meh_position((distance, map_size_)).xy,
+                    PlotCoordinate.from_grad_meh_position((distance, 0)).lat_lon,
+                    PlotCoordinate.from_grad_meh_position(
+                        (distance, map_size_)
+                    ).lat_lon,
                 ],
                 color=styles.GRID_STYLE.color,
                 weight=styles.GRID_STYLE.weight,
@@ -352,14 +356,14 @@ class Arma3LeafletMap:
             )
             v_line.add_to(self.folium_map)
             self._add_text_marker(
-                a3_position=Position2D(label_indent_, distance),
+                a3_position=Position2D(x=label_indent_, y=distance),
                 text=f"{i:02}",
             )
 
     def _add_text_marker(self, *, a3_position: Position2D, text: str) -> None:
         pos_ = PlotCoordinate.from_a3_position(a3_position)
         marker = folium.Marker(
-            location=pos_.xy,
+            location=pos_.lat_lon,
             icon=folium.DivIcon(html=f'<div style="font-size: 1rem">{text}</div>'),
         )
         marker.add_to(self.folium_map)
