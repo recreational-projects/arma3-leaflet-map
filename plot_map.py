@@ -7,7 +7,7 @@ from src.model.arma3_leaflet_map import Arma3LeafletMap
 from src.model.arma3_map_data import Arma3MapData
 from src.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
 
-MAP_NAME = "stratis"
+MAP_NAME = "spex_utah_beach"
 LOG_LEVEL = "INFO"
 
 

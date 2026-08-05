@@ -60,7 +60,3 @@ BRIDGE_ROADS = {
     "road-bridge",
     "track-bridge",
 }
-IGNORED_ROADS = {
-    # Features from 'geojson/roads' dir that should not be loaded (yet):
-    "hide",
-}

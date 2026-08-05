@@ -59,8 +59,8 @@ class Arma3LeafletMap:
             tiles=None,
         )
 
-    def render(self, export_path: Path) -> None:
-        """Plot Folium map and save."""
+    def render(self, export_path: Path, *, plot_hidden_roads: bool = False) -> None:
+        """Plot Folium map and save. Optionally plot hidden roads."""
         name_ = self.data.metadata.world_name
         log_text = escape(f"[{name_}] rendering map...")
         log_msg = f"[bold]{log_text}[/]"
@@ -78,7 +78,7 @@ class Arma3LeafletMap:
         self._plot_multipolygons()
         self._plot_polygons()
         self._plot_markers()
-        self._plot_roads()
+        self._plot_roads(plot_hidden=plot_hidden_roads)
         self._plot_bridges()
         self._plot_non_road_lines()
         if self.territory_control_points:
@@ -202,7 +202,7 @@ class Arma3LeafletMap:
                 feature_kind=feature_kind, features=features, style=style
             ).add_to(self.folium_map)
 
-    def _plot_roads(self) -> None:
+    def _plot_roads(self, *, plot_hidden: bool = False) -> None:
         """
         Add all series of road features to the map in style order (minor -> major).
 
@@ -211,14 +211,16 @@ class Arma3LeafletMap:
         multi_series_ = self.data.roads
         remaining_road_kinds = set(multi_series_.keys())
         for feature_kind, style in styles.ROAD_STYLES.items():
+            remaining_road_kinds.discard(feature_kind)
+            if feature_kind == "hide" and not plot_hidden:
+                continue
+
             features = multi_series_.get(feature_kind)
             if features:
                 group = folium_from_geojson.poly_line_group(
                     feature_kind=feature_kind, features=features, style=style
                 )
                 group.add_to(self.folium_map)
-
-            remaining_road_kinds.discard(feature_kind)
 
         for feature_kind in remaining_road_kinds:
             log_msg = f"- No style in ROAD_STYLES for '{feature_kind}'."

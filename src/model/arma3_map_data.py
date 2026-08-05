@@ -173,8 +173,7 @@ def _load_roads_and_bridges(
         kind = _get_feature_descriptor(fp)
         if kind in features_config.BRIDGE_ROADS:
             bridges[kind] = _load_features_from_file(path=fp, world_name=world_name)
-
-        elif kind not in features_config.IGNORED_ROADS:
+        else:
             roads[kind] = _load_features_from_file(path=fp, world_name=world_name)
 
     return {"roads": roads, "bridges": bridges}
