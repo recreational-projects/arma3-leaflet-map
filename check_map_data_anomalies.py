@@ -1,14 +1,8 @@
-"""
-Report map metadata anomalies.
+"""Report map metadata anomalies."""
 
-- `worldName` != directory name
-- `elevationOffset` != 0
-- `gridOffsetX` != 0
-- `gridOffsetY` != `worldSize`
-"""
-
-import json
 import logging
+
+from arma3_offline_map_lib.metadata import Metadata
 
 from src.setup import INPUT_PATH, PROCESS_UNSUPPORTED_MAPS, setup_logging
 from src.supported_maps import SUPPORTED_MAPS
@@ -35,27 +29,43 @@ def main() -> None:
             logger.error("Missing 'meta.json' - skipping.")
             continue
 
-        metadata_ = json.loads((dir_ / "meta.json").read_text())
-        worldName = metadata_["worldName"]
-        worldSize = metadata_["worldSize"]
-        elevationOffset = metadata_["elevationOffset"]
-        gridOffsetX = metadata_["gridOffsetX"]
-        gridOffsetY = metadata_["gridOffsetY"]
+        metadata = Metadata.from_file(metadata_filepath)
+        world_name_ = metadata.world_name
+        elevation_offset_ = metadata.elevation_offset
+        grid_offset_ = metadata.grid_offset
+        world_size_ = metadata.world_size
 
-        if worldName != dir_.stem:
-            log_msg = f"'{worldName}' doesn't match dir stem '{dir_.stem}'"
+        if world_name_ != dir_.stem:
+            log_msg = f"'{world_name_}' doesn't match dir stem '{dir_.stem}'"
             logger.warning(log_msg)
 
-        if elevationOffset != 0:
-            log_msg = f"'{worldName}': {elevationOffset=}"
+        if elevation_offset_ != 0:
+            log_msg = (
+                f"'{world_name_}': non-zero `elevationOffset` ({elevation_offset_})"
+            )
             logger.warning(log_msg)
 
-        if gridOffsetX != 0:
-            log_msg = f"'{worldName}': {gridOffsetX=}"
+        if grid_offset_.x != 0:
+            log_msg = f"'{world_name_}': non-zero `gridOffsetX` ({grid_offset_.x})"
             logger.warning(log_msg)
 
-        if gridOffsetY != worldSize:
-            log_msg = f"'{worldName}': {gridOffsetY=}, {worldSize=}"
+        if grid_offset_.y != world_size_:
+            log_msg = (
+                f"'{world_name_}': "
+                f"`gridOffsetY` ({grid_offset_.y}) != `worldSize` ({world_size_})"
+            )
+            logger.warning(log_msg)
+
+        if not (dir_ / "preview.png").is_file():
+            log_msg = f"'{world_name_}': missing preview image."
+            logger.warning(log_msg)
+
+        if (dir_ / "geojson" / "roads" / "hide.geojson.gz").is_file():
+            log_msg = f"'{world_name_}': has hidden roads"
+            logger.warning(log_msg)
+
+        if (dir_ / "geojson" / "river.geojson.gz").is_file():
+            log_msg = f"'{world_name_}': has river"
             logger.warning(log_msg)
 
 
