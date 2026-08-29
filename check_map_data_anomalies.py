@@ -2,7 +2,7 @@
 
 import logging
 
-from arma3_offline_map_lib.metadata import Metadata
+from arma3_offline_map_lib.grad_meh.metadata import Metadata
 
 from src.setup import INPUT_PATH, PROCESS_UNSUPPORTED_MAPS, setup_logging
 from src.supported_maps import SUPPORTED_MAPS

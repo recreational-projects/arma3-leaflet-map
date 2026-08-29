@@ -6,12 +6,12 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
 
-from arma3_offline_map_lib.dem import DEM
-from arma3_offline_map_lib.geojson import (
+from arma3_offline_map_lib.grad_meh.dem import DEM
+from arma3_offline_map_lib.grad_meh.geojson import (
     geojson_gz_files_in_dir,
     load_features_from_file,
 )
-from arma3_offline_map_lib.metadata import Metadata
+from arma3_offline_map_lib.grad_meh.metadata import Metadata
 from rich.markup import escape
 
 from src import features_config
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from collections.abc import Collection, Container, Mapping
     from pathlib import Path
 
-    from arma3_offline_map_lib import geojson
+    from arma3_offline_map_lib.grad_meh import geojson
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ class Arma3MapData:
 
     @classmethod
     def from_data(cls, path: Path) -> Self | None:
-        """Compile from source GeoJSON."""
+        """Compile from source files."""
         if not path.is_dir():
             log_msg = f"Can't find '{path}'; skipping."
             _LOGGER.error(log_msg)
@@ -262,12 +262,7 @@ def _load_features_from_dir(
 def _load_features_from_file(
     *, path: Path, limit: int | None = None, world_name: str
 ) -> list[geojson.Feature]:
-    """
-    Return features from a `.geojson.gz` file.
-
-    NB: grad_meh source files are gzipped JSON arrays of GeoJSON features, not GeoJSON
-    compliant files.
-    """
+    """Return features from a `.geojson.gz` file."""
     features = load_features_from_file(path)
     if not features:
         log_msg = f"[{world_name}] no valid features in `{path.name}`."

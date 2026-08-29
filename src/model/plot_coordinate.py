@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Self
 from arma3_offline_map_lib.position_2d import Position2D
 
 if TYPE_CHECKING:
-    from arma3_offline_map_lib import geojson
+    from arma3_offline_map_lib.grad_meh import geojson
 
 
 _DEGREES_LATITUDE_TO_M_AT_EQUATOR = 110574

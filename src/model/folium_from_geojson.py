@@ -6,7 +6,7 @@ import logging
 from typing import TYPE_CHECKING
 
 import folium
-from arma3_offline_map_lib import geojson
+from arma3_offline_map_lib.grad_meh import geojson
 
 from src.styles import (
     CircleMarkerStyle,

@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 import folium
 import shapely
 from arma3_offline_map_lib.position_2d import Position2D
-from PIL import Image, ImageOps
 from rich.markup import escape
 
 from src import styles
@@ -69,9 +68,15 @@ class Arma3LeafletMap:
         if self.data.preview_image_filepath:
             self._embed_sat_map_overlay(self.data.preview_image_filepath)
 
-        land_image_filepath_ = WORKING_PATH / f"{name_}.png"
-        self._render_land_image(land_image_filepath_)
-        self._embed_land_image(land_image_filepath_)
+        # Render the land/sea boolean array to an image file, then embed it.
+        # This appears to be much faster than directly embedding the array.
+        land_sea_image_filepath_ = WORKING_PATH / f"{name_}.png"
+        self.data.dem.export_land_sea_image(
+            path=land_sea_image_filepath_,
+            land_color=styles.LAND_COLOR_RGB,
+            sea_color=styles.WATER_COLOR_RGB,
+        )
+        self._embed_land_sea_image(land_sea_image_filepath_)
         log_msg = f"[{name_}] land/sea image rendered and embedded."
         _LOGGER.info(log_msg)
 
@@ -121,23 +126,9 @@ class Arma3LeafletMap:
         )
         map_image_overlay.add_to(self.folium_map)
 
-    def _render_land_image(self, path: Path) -> None:
+    def _embed_land_sea_image(self, path: Path) -> None:
         """
-        Render the land/sea boolean array to an image file to be embedded later.
-
-        This appears to be much faster than directly embedding the array.
-        Recoloring is easier too.
-        """
-        onebit_im = Image.fromarray(self.data.dem.land)
-        grayscale_im = onebit_im.convert(mode="L")
-        color_im = ImageOps.colorize(
-            grayscale_im, black=styles.WATER_COLOR_RGB, white=styles.LAND_COLOR_RGB
-        )
-        color_im.save(path)
-
-    def _embed_land_image(self, path: Path) -> None:
-        """
-        Embed the land/sea image in the map as a base layer.
+        Embed a land/sea image file in the map as a base layer.
 
         The image is the same resolution as the heightmap and is not smoothed.
         """
