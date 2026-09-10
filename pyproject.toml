@@ -6,7 +6,6 @@ requires-python = ">=3.14"
 dependencies = [
     "arma3-offline-map-lib",
     "folium>=0.20.0",
-    "matplotlib>=3.11.0",
     "msgspec>=0.21.1",
     "rich>=15.0.0",
     "shapely>=2.1.2",
