@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
 
@@ -14,7 +15,13 @@ from arma3_offline_map_lib.grad_meh.geojson import (
 from arma3_offline_map_lib.grad_meh.metadata import Metadata
 from rich.markup import escape
 
-from src import features_config
+from src.features_config import (
+    BRIDGE_ROADS,
+    FEATURE_GEOMETRIES,
+    IGNORED_FEATURE_KIND_THRESHOLD,
+    IGNORED_LOCATIONS,
+    FeatureGeometryKind,
+)
 from src.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
@@ -39,29 +46,33 @@ class _RootFeatures:
     @classmethod
     def load(cls, *, path: Path, world_name: str) -> Self:
         """Load features from the root 'geojson' directory."""
+        feature_geometries = defaultdict(set)
+        for k, v in FEATURE_GEOMETRIES.items():
+            feature_geometries[v].add(k)
+
         multipolygons_ = _load_features_from_dir(
             path=path,
-            include=features_config.MULTIPOLYGON_FEATURES,
-            kind="multipolygon",
+            include=feature_geometries[FeatureGeometryKind.MULTI_POLYGON],
+            collective_descriptor="multi-polygon features",
             world_name=world_name,
         )
         polygons_ = _load_features_from_dir(
             path=path,
-            include=features_config.POLYGON_FEATURES,
-            kind="polygon",
+            include=feature_geometries[FeatureGeometryKind.POLYGON],
+            collective_descriptor="polygon features",
             world_name=world_name,
         )
         points_ = _load_features_from_dir(
             path=path,
-            include=features_config.MARKER_FEATURES,
-            limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
-            kind="point",
+            include=feature_geometries[FeatureGeometryKind.POINT],
+            limit=IGNORED_FEATURE_KIND_THRESHOLD,
+            collective_descriptor="point features",
             world_name=world_name,
         )
         lines_ = _load_features_from_dir(
             path=path,
-            include=features_config.POLY_LINE_FEATURES,
-            kind="non-road/bridge line",
+            include=feature_geometries[FeatureGeometryKind.POLY_LINE],
+            collective_descriptor="non-road/bridge line features",
             world_name=world_name,
         )
 
@@ -78,7 +89,7 @@ class _RootFeatures:
         if ignored_root_feature_kinds:
             log_msg = (
                 f"[{world_name}] ignored root features: "
-                f"{format_iterable_of_str(ignored_root_feature_kinds)}"
+                f"{format_iterable_of_str(sorted(ignored_root_feature_kinds))}."
             )
             _LOGGER.warning(log_msg)
 
@@ -171,7 +182,7 @@ def _load_roads_and_bridges(
     bridges = {}
     for fp in geojson_gz_files_in_dir(path):
         kind = _get_feature_descriptor(fp)
-        if kind in features_config.BRIDGE_ROADS:
+        if kind in BRIDGE_ROADS:
             bridges[kind] = _load_features_from_file(path=fp, world_name=world_name)
         else:
             roads[kind] = _load_features_from_file(path=fp, world_name=world_name)
@@ -191,15 +202,15 @@ def _load_locations(*, path: Path, world_name: str) -> dict[str, list[geojson.Fe
     }
     locations = _load_features_from_dir(
         path=path,
-        exclude=features_config.IGNORED_LOCATIONS,
-        kind="location",
+        exclude=IGNORED_LOCATIONS,
+        collective_descriptor="locations",
         world_name=world_name,
     )
     ignored_locations = all_location_kinds - locations.keys()
     if ignored_locations:
         log_msg = (
             f"[{world_name}] ignored locations: "
-            f"{format_iterable_of_str(ignored_locations)}"
+            f"{format_iterable_of_str(sorted(ignored_locations))}."
         )
         _LOGGER.warning(log_msg)
 
@@ -212,11 +223,24 @@ def _load_features_from_dir(
     include: Container[str] | None = None,
     exclude: Container[str] | None = None,
     limit: int | None = None,
-    kind: str,
+    collective_descriptor: str,
     world_name: str,
 ) -> dict[str, list[geojson.Feature]]:
     """
     Load features from `.geojson.gz` files in a directory.
+
+    Params:
+        path:
+            Directory from which to load files
+        include:
+            Feature kinds to include (corresponds to filename without suffixes)
+        exclude:
+            Feature kinds to exclude (corresponds to filename without suffixes)
+        limit:
+        collective_descriptor:
+            Describe the set of feature kinds. Used only in logging
+        world_name:
+            Name of the world being loaded. Used only in logging
 
     Returns:
          `dict`. Keys are `FILENAME_STEM` for each relevant
@@ -247,12 +271,12 @@ def _load_features_from_dir(
             dir_features[feature_descriptor] = features
 
     if not dir_features:
-        log_msg = f"[{world_name}] no {kind} features."
+        log_msg = f"[{world_name}] no {collective_descriptor}."
         _LOGGER.warning(log_msg)
     else:
         log_msg = (
-            f"[{world_name}] loaded {kind} features: "
-            f"{_summarise_features(dir_features)}"
+            f"[{world_name}] loaded {collective_descriptor}: "
+            f"{_summarise_features(dir_features)}."
         )
         _LOGGER.debug(log_msg)
 
