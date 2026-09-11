@@ -3,42 +3,32 @@
 from __future__ import annotations
 
 import logging
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
 
-import folium
-from arma3_offline_map_lib.dem import DEM
-from arma3_offline_map_lib.geojson import (
+from arma3_offline_map_lib.grad_meh.dem import DEM
+from arma3_offline_map_lib.grad_meh.geojson import (
     geojson_gz_files_in_dir,
     load_features_from_file,
 )
-from arma3_offline_map_lib.metadata import Metadata
+from arma3_offline_map_lib.grad_meh.metadata import Metadata
 from rich.markup import escape
 
-from src import features_config
-from src.plot import (
-    add_title,
-    embed_land_image,
-    embed_sat_map_overlay,
-    plot_bridges,
-    plot_grid,
-    plot_markers,
-    plot_multipolygons,
-    plot_non_road_lines,
-    plot_polygons,
-    plot_roads,
-    plot_text_labels,
-    render_land_image,
+from src.features_config import (
+    BRIDGE_ROADS,
+    FEATURE_GEOMETRIES,
+    IGNORED_FEATURE_KIND_THRESHOLD,
+    IGNORED_LOCATIONS,
+    FeatureGeometryKind,
 )
-from src.plot_coordinate import PlotCoordinate
-from src.setup import WORKING_PATH
 from src.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Container, Mapping
     from pathlib import Path
 
-    from arma3_offline_map_lib import geojson
+    from arma3_offline_map_lib.grad_meh import geojson
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -56,29 +46,33 @@ class _RootFeatures:
     @classmethod
     def load(cls, *, path: Path, world_name: str) -> Self:
         """Load features from the root 'geojson' directory."""
+        feature_geometries = defaultdict(set)
+        for k, v in FEATURE_GEOMETRIES.items():
+            feature_geometries[v].add(k)
+
         multipolygons_ = _load_features_from_dir(
             path=path,
-            include=features_config.MULTIPOLYGON_FEATURES,
-            kind="multipolygon",
+            include=feature_geometries[FeatureGeometryKind.MULTI_POLYGON],
+            collective_descriptor="multi-polygon features",
             world_name=world_name,
         )
         polygons_ = _load_features_from_dir(
             path=path,
-            include=features_config.POLYGON_FEATURES,
-            kind="polygon",
+            include=feature_geometries[FeatureGeometryKind.POLYGON],
+            collective_descriptor="polygon features",
             world_name=world_name,
         )
         points_ = _load_features_from_dir(
             path=path,
-            include=features_config.MARKER_FEATURES,
-            limit=features_config.IGNORED_FEATURE_KIND_THRESHOLD,
-            kind="point",
+            include=feature_geometries[FeatureGeometryKind.POINT],
+            limit=IGNORED_FEATURE_KIND_THRESHOLD,
+            collective_descriptor="point features",
             world_name=world_name,
         )
         lines_ = _load_features_from_dir(
             path=path,
-            include=features_config.POLY_LINE_FEATURES,
-            kind="non-road/bridge line",
+            include=feature_geometries[FeatureGeometryKind.POLY_LINE],
+            collective_descriptor="non-road/bridge line features",
             world_name=world_name,
         )
 
@@ -95,7 +89,7 @@ class _RootFeatures:
         if ignored_root_feature_kinds:
             log_msg = (
                 f"[{world_name}] ignored root features: "
-                f"{format_iterable_of_str(ignored_root_feature_kinds)}"
+                f"{format_iterable_of_str(sorted(ignored_root_feature_kinds))}."
             )
             _LOGGER.warning(log_msg)
 
@@ -124,21 +118,21 @@ class Arma3MapData:
 
     @classmethod
     def from_data(cls, path: Path) -> Self | None:
-        """Compile from source GeoJSON."""
+        """Compile from source files."""
         if not path.is_dir():
             log_msg = f"Can't find '{path}'; skipping."
+            _LOGGER.error(log_msg)
+            return None
+
+        metadata_path = path / "meta.json"
+        if not metadata_path.is_file():
+            log_msg = f"[{path.stem}] can't find {metadata_path}; skipping."
             _LOGGER.error(log_msg)
             return None
 
         log_text = escape(f"[{path.stem}] loading data...")
         log_msg = f"[bold]{log_text}[/]"
         _LOGGER.info(log_msg, extra={"markup": True})
-
-        metadata_path = path / "meta.json"
-        if not metadata_path.is_file():
-            log_msg = f"[{path.stem}] can't find 'meta.json'; skipping."
-            _LOGGER.error(log_msg)
-            return None
 
         metadata_ = Metadata.from_file(metadata_path)
         name_ = metadata_.world_name
@@ -151,85 +145,28 @@ class Arma3MapData:
             _LOGGER.warning(log_msg)
             preview_image_filepath_ = None
 
-        geojson_path = path / "geojson"
-        root_features_ = _RootFeatures.load(path=geojson_path, world_name=name_)
-        roads_and_bridges = _load_roads_and_bridges(
-            path=geojson_path / "roads", world_name=name_
-        )
-        locations_ = _load_locations(path=geojson_path / "locations", world_name=name_)
         dem_ = DEM.from_esri_ascii_raster_gz(path / "dem.asc.gz")
         log_msg = f"[{name_}] DEM loaded."
         _LOGGER.info(log_msg)
-
-        log_text = escape(f"[{path.stem}] ...done.")
-        log_msg = f"[bold]{log_text}[/]"
-        _LOGGER.info(log_msg, extra={"markup": True})
-        return cls(
+        geojson_path_ = path / "geojson"
+        roads_and_bridges_ = _load_roads_and_bridges(
+            path=geojson_path_ / "roads", world_name=name_
+        )
+        data = cls(
             metadata=metadata_,
-            root_features=root_features_,
+            root_features=_RootFeatures.load(path=geojson_path_, world_name=name_),
             dem=dem_,
-            roads=roads_and_bridges["roads"],
-            bridges=roads_and_bridges["bridges"],
-            locations=locations_,
+            roads=roads_and_bridges_["roads"],
+            bridges=roads_and_bridges_["bridges"],
+            locations=_load_locations(
+                path=geojson_path_ / "locations", world_name=name_
+            ),
             preview_image_filepath=preview_image_filepath_,
         )
-
-    def render_map(self, export_path: Path) -> None:
-        """Plot Folium map and save."""
-        name_ = self.metadata.world_name
-        log_text = escape(f"[{name_}] rendering map...")
-        log_msg = f"[bold]{log_text}[/]"
-        _LOGGER.info(log_msg, extra={"markup": True})
-
-        size_ = self.metadata.world_size
-        center_ = PlotCoordinate.from_grad_meh_position((size_ / 2, size_ / 2))
-        map_ = folium.Map(
-            location=center_.xy,
-            zoom_start=13,
-            control_scale=True,  # Show a scale on the bottom of the map.
-            prefer_canvas=True,  # for vector layers instead of SVG
-            # crs="Simple",  # Don't use, as it seems to use pixels for plot units.
-            tiles=None,
-        )
-        if self.preview_image_filepath:
-            embed_sat_map_overlay(
-                map_=map_, path=self.preview_image_filepath, map_size=size_
-            )
-        land_image_filepath_ = WORKING_PATH / f"{name_}.png"
-        render_land_image(path=land_image_filepath_, dem=self.dem)
-        embed_land_image(map_=map_, path=land_image_filepath_, map_size=size_)
-        log_msg = f"[{name_}] land/sea image rendered and embedded."
-        _LOGGER.info(log_msg)
-
-        plot_multipolygons(map_=map_, multi_series=self.root_features.multipolygons)
-        plot_polygons(map_=map_, multi_series=self.root_features.polygons)
-        plot_markers(map_=map_, multi_series=self.root_features.points)
-        plot_roads(map_=map_, multi_series=self.roads)
-        plot_bridges(map_=map_, multi_series=self.bridges)
-        plot_non_road_lines(map_=map_, multi_series=self.root_features.lines)
-        plot_text_labels(map_=map_, multi_series=self.locations)
-        plot_grid(map_=map_, map_size=size_)
-        folium.LayerControl().add_to(map_)
-        add_title(
-            map_=map_,
-            text=f"{self.metadata.display_name} "
-            f"('{self.metadata.world_name}'). "
-            f"Author: {self.metadata.author}",
-        )
-
-        log_text = escape(f"[{name_}] ...done.")
-        log_msg = f"[bold]{log_text}[/]"
-        _LOGGER.info(log_msg, extra={"markup": True})
-
-        save_filepath = export_path / f"{name_}.html"
-        log_text = escape(f"[{name_}] saving...")
-        log_msg = f"[bold]{log_text}[/]"
-        _LOGGER.info(log_msg, extra={"markup": True})
-
-        map_.save(save_filepath)
-        log_text = escape(f"[{name_}] ...done.")
-        log_msg = f"[bold]{log_text}[/]"
-        _LOGGER.info(log_msg, extra={"markup": True})
+        log_text_ = escape(f"[{path.stem}] ...done.")
+        log_msg_ = f"[bold]{log_text_}[/]"
+        _LOGGER.info(log_msg_, extra={"markup": True})
+        return data
 
 
 def _load_roads_and_bridges(
@@ -245,10 +182,9 @@ def _load_roads_and_bridges(
     bridges = {}
     for fp in geojson_gz_files_in_dir(path):
         kind = _get_feature_descriptor(fp)
-        if kind in features_config.BRIDGE_ROADS:
+        if kind in BRIDGE_ROADS:
             bridges[kind] = _load_features_from_file(path=fp, world_name=world_name)
-
-        elif kind not in features_config.IGNORED_ROADS:
+        else:
             roads[kind] = _load_features_from_file(path=fp, world_name=world_name)
 
     return {"roads": roads, "bridges": bridges}
@@ -266,15 +202,15 @@ def _load_locations(*, path: Path, world_name: str) -> dict[str, list[geojson.Fe
     }
     locations = _load_features_from_dir(
         path=path,
-        exclude=features_config.IGNORED_LOCATIONS,
-        kind="location",
+        exclude=IGNORED_LOCATIONS,
+        collective_descriptor="locations",
         world_name=world_name,
     )
     ignored_locations = all_location_kinds - locations.keys()
     if ignored_locations:
         log_msg = (
             f"[{world_name}] ignored locations: "
-            f"{format_iterable_of_str(ignored_locations)}"
+            f"{format_iterable_of_str(sorted(ignored_locations))}."
         )
         _LOGGER.warning(log_msg)
 
@@ -287,11 +223,24 @@ def _load_features_from_dir(
     include: Container[str] | None = None,
     exclude: Container[str] | None = None,
     limit: int | None = None,
-    kind: str,
+    collective_descriptor: str,
     world_name: str,
 ) -> dict[str, list[geojson.Feature]]:
     """
     Load features from `.geojson.gz` files in a directory.
+
+    Params:
+        path:
+            Directory from which to load files
+        include:
+            Feature kinds to include (corresponds to filename without suffixes)
+        exclude:
+            Feature kinds to exclude (corresponds to filename without suffixes)
+        limit:
+        collective_descriptor:
+            Describe the set of feature kinds. Used only in logging
+        world_name:
+            Name of the world being loaded. Used only in logging
 
     Returns:
          `dict`. Keys are `FILENAME_STEM` for each relevant
@@ -322,12 +271,12 @@ def _load_features_from_dir(
             dir_features[feature_descriptor] = features
 
     if not dir_features:
-        log_msg = f"[{world_name}] no {kind} features."
+        log_msg = f"[{world_name}] no {collective_descriptor}."
         _LOGGER.warning(log_msg)
     else:
         log_msg = (
-            f"[{world_name}] loaded {kind} features: "
-            f"{_summarise_features(dir_features)}"
+            f"[{world_name}] loaded {collective_descriptor}: "
+            f"{_summarise_features(dir_features)}."
         )
         _LOGGER.debug(log_msg)
 
@@ -337,12 +286,7 @@ def _load_features_from_dir(
 def _load_features_from_file(
     *, path: Path, limit: int | None = None, world_name: str
 ) -> list[geojson.Feature]:
-    """
-    Return features from a `.geojson.gz` file.
-
-    NB: grad_meh source files are gzipped JSON arrays of GeoJSON features, not GeoJSON
-    compliant files.
-    """
+    """Return features from a `.geojson.gz` file."""
     features = load_features_from_file(path)
     if not features:
         log_msg = f"[{world_name}] no valid features in `{path.name}`."

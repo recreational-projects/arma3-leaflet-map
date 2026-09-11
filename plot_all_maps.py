@@ -16,8 +16,9 @@ from rich.progress import (
     TimeRemainingColumn,
 )
 
-from src.arma3_map_data import Arma3MapData
 from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
+from src.model.arma3_leaflet_map import Arma3LeafletMap
+from src.model.arma3_map_data import Arma3MapData
 from src.setup import INPUT_PATH, OUTPUT_PATH, PROCESS_UNSUPPORTED_MAPS, setup_logging
 from src.supported_maps import SUPPORTED_MAPS
 
@@ -41,12 +42,13 @@ def main() -> None:
     dirs_to_plot = []
     for fp in data_dirs:
         if fp.stem in existing_plots:
-            log_msg = f"'{fp.stem}' already plotted - skipping."
-            logger.warning(log_msg)
+            log_msg = f"'{fp.stem}' already plotted; skipping."
+            logger.info(log_msg)
         else:
             dirs_to_plot.append(fp)
 
-    log_msg = f"{len(dirs_to_plot)} maps to plot."
+    to_plot_msg = ", ".join(f"'{fp.stem}'" for fp in dirs_to_plot)
+    log_msg = f"{len(dirs_to_plot)} maps to plot: {to_plot_msg}."
     logger.info(log_msg)
 
     if dirs_to_plot:
@@ -67,8 +69,12 @@ def main() -> None:
             while not progress.finished:
                 for fp in sorted(dirs_to_plot):
                     map_data = Arma3MapData.from_data(fp)
-                    if map_data:
-                        map_data.render_map(OUTPUT_PATH)
+                    if not map_data:
+                        log_msg = f"Unexpected data issue with {fp}; skipping."
+                        logger.error(log_msg)
+                    else:
+                        map_ = Arma3LeafletMap(map_data)
+                        map_.render(OUTPUT_PATH)
 
                     progress.update(task, advance=1)
 

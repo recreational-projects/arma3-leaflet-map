@@ -1,0 +1,372 @@
+"""Plotting."""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+import folium
+import shapely
+from arma3_offline_map_lib.position_2d import Position2D
+from rich.markup import escape
+
+from src import styles
+from src.setup import WORKING_PATH
+
+from . import folium_from_control_points, folium_from_geojson, folium_from_shapely
+from .plot_coordinate import PlotCoordinate
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from .arma3_map_data import Arma3MapData
+
+
+_LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(kw_only=True, frozen=True)
+class TerritoryControlPoint:
+    """Represents a control point on the map."""
+
+    # init:
+    name: str
+    position: Position2D
+
+
+@dataclass
+class Arma3LeafletMap:
+    """TODO."""
+
+    # init:
+    data: Arma3MapData
+
+    # non-init:
+    folium_map: folium.Map = field(init=False)
+    territory_control_points: set[TerritoryControlPoint] = field(default_factory=set)
+
+    def __post_init__(self) -> None:
+        size_ = self.data.metadata.world_size
+        center_ = PlotCoordinate.from_grad_meh_position((size_ / 2, size_ / 2))
+        self.folium_map = folium.Map(
+            location=center_.lat_lon,
+            zoom_start=13,
+            control_scale=True,  # Show a scale on the bottom of the map.
+            prefer_canvas=True,  # for vector layers instead of SVG
+            # crs="Simple",  # Don't use, as it seems to use pixels for plot units.
+            tiles=None,
+        )
+
+    def render(self, export_path: Path, *, plot_hidden_roads: bool = False) -> None:
+        """Plot Folium map and save. Optionally plot hidden roads."""
+        name_ = self.data.metadata.world_name
+        log_text = escape(f"[{name_}] rendering map...")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
+        if self.data.preview_image_filepath:
+            self._embed_sat_map_overlay(self.data.preview_image_filepath)
+
+        # Render the land/sea boolean array to an image file, then embed it.
+        # This appears to be much faster than directly embedding the array.
+        land_sea_image_filepath_ = WORKING_PATH / f"{name_}.png"
+        self.data.dem.export_land_sea_image(
+            path=land_sea_image_filepath_,
+            land_color=styles.LAND_COLOR_RGB,
+            sea_color=styles.WATER_COLOR_RGB,
+        )
+        self._embed_land_sea_image(land_sea_image_filepath_)
+        log_msg = f"[{name_}] land/sea image rendered and embedded."
+        _LOGGER.info(log_msg)
+
+        self._plot_multipolygons()
+        self._plot_polygons()
+        self._plot_markers()
+        self._plot_roads(plot_hidden=plot_hidden_roads)
+        self._plot_bridges()
+        self._plot_non_road_lines()
+        if self.territory_control_points:
+            self._plot_territories()
+            self._plot_territory_control_points()
+
+        self._plot_text_labels()
+        self._plot_grid()
+        folium.LayerControl().add_to(self.folium_map)
+        self._add_title(
+            text=f"{self.data.metadata.display_name} "
+            f"('{self.data.metadata.world_name}'). "
+            f"Author: {self.data.metadata.author}",
+        )
+
+        log_text = escape(f"[{name_}] ...done.")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
+        save_filepath = export_path / f"{name_}.html"
+        log_text = escape(f"[{name_}] saving...")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
+        self.folium_map.save(save_filepath)
+        log_text = escape(f"[{name_}] ...done.")
+        log_msg = f"[bold]{log_text}[/]"
+        _LOGGER.info(log_msg, extra={"markup": True})
+
+    def _embed_sat_map_overlay(self, path: Path) -> None:
+        """Embed the satellite image in the map as an overlay."""
+        size_ = self.data.metadata.world_size
+        max_ = PlotCoordinate.from_grad_meh_position((size_, size_))
+        map_image_overlay = folium.raster_layers.ImageOverlay(
+            image=str(path),
+            bounds=((0, 0), max_.lat_lon),
+            name="Preview satmap",
+            overlay=True,
+            show=False,
+        )
+        map_image_overlay.add_to(self.folium_map)
+
+    def _embed_land_sea_image(self, path: Path) -> None:
+        """
+        Embed a land/sea image file in the map as a base layer.
+
+        The image is the same resolution as the heightmap and is not smoothed.
+        """
+        size_ = self.data.metadata.world_size
+        max_ = PlotCoordinate.from_grad_meh_position((size_, size_))
+        map_image_overlay = folium.raster_layers.ImageOverlay(
+            image=str(path),
+            bounds=((0, 0), max_.lat_lon),
+            name="Land/sea image",
+            overlay=False,
+        )
+        map_image_overlay.add_to(self.folium_map)
+
+    def _plot_multipolygons(self) -> None:
+        """Add all series of multipolygon features to the map."""
+        for feature_kind, features in self.data.root_features.multipolygons.items():
+            # for forest, features is singleton
+            style = styles.POLYGON_STYLES.get(feature_kind)
+            if not style:
+                log_msg = f"- No style in POLYGON_STYLES for '{feature_kind}'."
+                _LOGGER.error(log_msg)
+                style = styles.PolygonStyle()
+
+            folium_from_geojson.polygon_group_from_multi_polygons(
+                feature_kind=feature_kind, features=features, style=style
+            ).add_to(self.folium_map)
+
+    def _plot_polygons(self) -> None:
+        """
+        Add all series of polygon features to the map.
+
+        Handles 'house' separately.
+        """
+        for feature_kind, features in self.data.root_features.polygons.items():
+            if feature_kind == "house":
+                group = folium_from_geojson.polygon_group_from_house(
+                    feature_kind=feature_kind, features=features
+                )
+            else:
+                style = styles.POLYGON_STYLES.get(feature_kind)
+                if not style:
+                    log_msg = f"- No style in POLYGON_STYLES for '{feature_kind}'."
+                    _LOGGER.error(log_msg)
+                    style = styles.PolygonStyle()
+
+                group = folium_from_geojson.polygon_group_from_polygons(
+                    feature_kind=feature_kind, features=features, style=style
+                )
+
+            group.add_to(self.folium_map)
+
+    def _plot_markers(self) -> None:
+        """Add all series of marker features to the map."""
+        for feature_kind, features in self.data.root_features.points.items():
+            style = styles.POINT_STYLES.get(feature_kind)
+            if not style:
+                log_msg = f"- No style in POINT_STYLES for '{feature_kind}'."
+                _LOGGER.error(log_msg)
+                style = styles.MarkerStyle()
+
+            folium_from_geojson.marker_group(
+                feature_kind=feature_kind, features=features, style=style
+            ).add_to(self.folium_map)
+
+    def _plot_roads(self, *, plot_hidden: bool = False) -> None:
+        """
+        Add all series of road features to the map in style order (minor -> major).
+
+        Road kinds that don't have a style are plotted last with a default style.
+        """
+        multi_series_ = self.data.roads
+        remaining_road_kinds = set(multi_series_.keys())
+        for feature_kind, style in styles.ROAD_STYLES.items():
+            remaining_road_kinds.discard(feature_kind)
+            if feature_kind == "hide" and not plot_hidden:
+                continue
+
+            features = multi_series_.get(feature_kind)
+            if features:
+                group = folium_from_geojson.poly_line_group(
+                    feature_kind=feature_kind, features=features, style=style
+                )
+                group.add_to(self.folium_map)
+
+        for feature_kind in remaining_road_kinds:
+            log_msg = f"- No style in ROAD_STYLES for '{feature_kind}'."
+            _LOGGER.error(log_msg)
+            features = multi_series_.get(feature_kind)
+            if features:
+                group = folium_from_geojson.poly_line_group(
+                    feature_kind=feature_kind,
+                    features=features,
+                    style=styles.LineStyle(),
+                )
+                group.add_to(self.folium_map)
+
+    def _plot_bridges(self) -> None:
+        """
+        Add all bridge feature series to the map in style order (minor -> major).
+
+        Bridge kinds that don't have a style are plotted last with a default style.
+        """
+        multi_series_ = self.data.bridges
+        remaining_bridge_kinds = set(multi_series_.keys())
+        for feature_kind, style in styles.BRIDGE_STYLES.items():
+            features = multi_series_.get(feature_kind)
+            if features:
+                group = folium_from_geojson.polygon_group_from_polygons(
+                    feature_kind=feature_kind, features=features, style=style
+                )
+                group.add_to(self.folium_map)
+
+            remaining_bridge_kinds.discard(feature_kind)
+
+        for feature_kind in remaining_bridge_kinds:
+            log_msg = f"- No style in BRIDGE_STYLES for '{feature_kind}'."
+            _LOGGER.error(log_msg)
+            features = multi_series_.get(feature_kind)
+            if features:
+                group = folium_from_geojson.polygon_group_from_polygons(
+                    feature_kind=feature_kind,
+                    features=features,
+                    style=styles.PolygonStyle(),
+                )
+                group.add_to(self.folium_map)
+
+    def _plot_non_road_lines(self) -> None:
+        """Add all series of (non-road) line features to the map."""
+        for feature_kind, features in self.data.root_features.lines.items():
+            style = styles.LINE_STYLES.get(feature_kind)
+            if not style:
+                log_msg = f"- No style in LINE_STYLES for '{feature_kind}'."
+                _LOGGER.error(log_msg)
+                style = styles.LineStyle()
+
+            folium_from_geojson.poly_line_group(
+                feature_kind=feature_kind, features=features, style=style
+            ).add_to(self.folium_map)
+
+    def _plot_territories(self) -> None:
+        """Add boundaries of territories around control points to the map."""
+        points = shapely.MultiPoint(
+            [
+                shapely.Point(p.position.x, p.position.y)
+                for p in self.territory_control_points
+            ]
+        )
+        voronoi_polygons = shapely.voronoi_polygons(geometry=points)
+        _world_size = self.data.metadata.world_size
+        territories = shapely.MultiPolygon(
+            [
+                shapely.clip_by_rect(
+                    geometry=p, xmin=0, ymin=0, xmax=_world_size, ymax=_world_size
+                )
+                for p in voronoi_polygons.geoms
+            ]
+        )
+        group = folium_from_shapely.polygon_group(
+            feature_kind="territories",
+            polygons=territories,
+            style=styles.TERRITORY_STYLE,
+        )
+        group.add_to(self.folium_map)
+
+    def _plot_territory_control_points(self) -> None:
+        """Add control points to the map."""
+        folium_from_control_points.text_marker_group(
+            feature_kind="Control points",
+            control_points=self.territory_control_points,
+            style=styles.CONTROL_POINT_STYLE,
+        ).add_to(self.folium_map)
+
+    def _plot_text_labels(self) -> None:
+        """Add all series of text labels to the map."""
+        for feature_kind, features in self.data.locations.items():
+            style = styles.TEXT_STYLES.get(feature_kind)
+            if not style:
+                log_msg = f"- No style in TEXT_STYLES for '{feature_kind}'."
+                _LOGGER.error(log_msg)
+                style = styles.TextStyle()
+
+            folium_from_geojson.text_marker_group(
+                feature_kind=feature_kind, features=features, style=style
+            ).add_to(self.folium_map)
+
+    def _plot_grid(self) -> None:
+        """Plot 1 km grid."""
+        map_size_ = self.data.metadata.world_size
+        for i in range((map_size_ // 1000) + 1):
+            distance = 1000 * i
+            h_line = folium.vector_layers.PolyLine(
+                locations=[
+                    PlotCoordinate.from_grad_meh_position((0, distance)).lat_lon,
+                    PlotCoordinate.from_grad_meh_position(
+                        (map_size_, distance)
+                    ).lat_lon,
+                ],
+                color=styles.GRID_STYLE.color,
+                weight=styles.GRID_STYLE.weight,
+                opacity=styles.GRID_STYLE.opacity,
+            )
+            h_line.add_to(self.folium_map)
+            label_indent_ = 100.0
+            self._add_text_marker(
+                a3_position=Position2D(x=distance, y=label_indent_),
+                text=f"{i:02}",
+            )
+            v_line = folium.vector_layers.PolyLine(
+                locations=[
+                    PlotCoordinate.from_grad_meh_position((distance, 0)).lat_lon,
+                    PlotCoordinate.from_grad_meh_position(
+                        (distance, map_size_)
+                    ).lat_lon,
+                ],
+                color=styles.GRID_STYLE.color,
+                weight=styles.GRID_STYLE.weight,
+                opacity=styles.GRID_STYLE.opacity,
+            )
+            v_line.add_to(self.folium_map)
+            self._add_text_marker(
+                a3_position=Position2D(x=label_indent_, y=distance),
+                text=f"{i:02}",
+            )
+
+    def _add_text_marker(self, *, a3_position: Position2D, text: str) -> None:
+        pos_ = PlotCoordinate.from_a3_position(a3_position)
+        marker = folium.Marker(
+            location=pos_.lat_lon,
+            icon=folium.DivIcon(html=f'<div style="font-size: 1rem">{text}</div>'),
+        )
+        marker.add_to(self.folium_map)
+
+    def _add_title(self, *, text: str) -> None:
+        """Add a title to the map."""
+        html_ = f"<h1>{text}</h1>"
+        root_ = self.folium_map.get_root()
+        if not getattr(root_, "html", None):
+            err_msg = "No HTML element in map root."
+            raise RuntimeError(err_msg)
+
+        root_.html.add_child(folium.Element(html_))

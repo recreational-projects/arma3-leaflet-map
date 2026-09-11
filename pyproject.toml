@@ -1,15 +1,14 @@
 [project]
 name = "arma3-leaflet-map"
-version = "0.6.0"
+version = "0.7.1"
 description = "Leaflet interactive maps for Arma 3"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "arma3-offline-map-lib",
     "folium>=0.20.0",
-    "matplotlib>=3.11.0",
     "msgspec>=0.21.1",
-    "pillow>=12.2.0",
     "rich>=15.0.0",
+    "shapely>=2.1.2",
 ]
 extend-safe-fixes = [
     "TC", # flake8-type-checking
@@ -17,9 +16,10 @@ extend-safe-fixes = [
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.6.0",
-    "pyrefly>=1.1.1",
-    "ruff>=0.15.20",
+    "pre-commit>=4.6.1",
+    "pyrefly>=1.2.0",
+    "pytest>=9.1.1",
+    "ruff>=0.16.6",
 ]
 
 [tool.ruff.lint]
@@ -28,12 +28,14 @@ select = ["ALL"]
 ignore = [
     # Rules that conflict with Ruff formatter, or conflict with other rules:
     "COM812",  # missing-trailing-comma
-    "D203",    # incorrect-blank-line-before-class
-    "D212",    # multi-line-summary-first-line
+    "D203",  # incorrect-blank-line-before-class
+    "D212",  # multi-line-summary-first-line
     # Other
-    "ERA001",  # commented-out-code
+    "C901",  # complex-structure
+    "CPY001",  # missing-copyright-notice
     "D105",  # undocumented-magic-method
     "D205",  # missing-blank-line-after-summary
+    "ERA001",  # commented-out-code
     "N806",  # non-lowercase-variable-in-function
     "PLR0913", # too-many-arguments
 ]
@@ -42,9 +44,10 @@ extend-safe-fixes = [
 ]
 
 [tool.uv.sources]
-arma3-offline-map-lib = { git = "https://github.com/recreational-projects/arma3-offline-map-lib.git", rev = "v0.6.0" }
+arma3-offline-map-lib = { git = "https://github.com/recreational-projects/arma3-offline-map-lib.git", rev = "v0.10.0" }
 
 [tool.pyrefly]
 project-includes = ["**/*.py*"]
 disable-search-path-heuristics = true  # code outside `src` requires this
 search-path = ["."]
+preset = "strict"
