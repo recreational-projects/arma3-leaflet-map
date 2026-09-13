@@ -10,9 +10,6 @@ dependencies = [
     "rich>=15.0.0",
     "shapely>=2.1.2",
 ]
-extend-safe-fixes = [
-    "TC", # flake8-type-checking
-]
 
 [dependency-groups]
 dev = [
@@ -31,12 +28,10 @@ ignore = [
     "D203",  # incorrect-blank-line-before-class
     "D212",  # multi-line-summary-first-line
     # Other
-    "C901",  # complex-structure
     "CPY001",  # missing-copyright-notice
     "D105",  # undocumented-magic-method
     "D205",  # missing-blank-line-after-summary
     "ERA001",  # commented-out-code
-    "N806",  # non-lowercase-variable-in-function
     "PLR0913", # too-many-arguments
 ]
 extend-safe-fixes = [
