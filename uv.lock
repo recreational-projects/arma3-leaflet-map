@@ -24,7 +24,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "arma3-offline-map-lib", git = "https://github.com/recreational-projects/arma3-offline-map-lib.git?rev=v0.10.0" },
+    { name = "arma3-offline-map-lib", directory = "../arma3-offline-map-lib" },
     { name = "folium", specifier = ">=0.20.0" },
     { name = "msgspec", specifier = ">=0.21.1" },
     { name = "rich", specifier = ">=15.0.0" },
@@ -42,13 +42,31 @@ dev = [
 [[package]]
 name = "arma3-offline-map-lib"
 version = "0.10.0"
-source = { git = "https://github.com/recreational-projects/arma3-offline-map-lib.git?rev=v0.10.0#060257ea6d1eac67c494fffe99293da2c5a9bb52" }
+source = { directory = "../arma3-offline-map-lib" }
 dependencies = [
     { name = "armaclass" },
     { name = "attrs" },
     { name = "msgspec" },
     { name = "numpy" },
     { name = "pillow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "armaclass", specifier = ">=0.2.2" },
+    { name = "attrs", specifier = ">=26.1.0" },
+    { name = "msgspec", specifier = ">=0.21.1" },
+    { name = "numpy", specifier = ">=2.3.5" },
+    { name = "pillow", specifier = ">=12.3.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pdoc", specifier = ">=16.0.0" },
+    { name = "pre-commit", specifier = ">=4.6.2" },
+    { name = "pyrefly", specifier = ">=1.3.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "ruff", specifier = ">=0.16.7" },
 ]
 
 [[package]]
