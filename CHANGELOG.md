@@ -6,8 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## UNRELEASED - TBC
 
+### Added
+
+- Improved map/ feature support
+  - extend supported maps
+  - list known unsupported maps
+  - plot 'fortress' generic objects – all generic objects are now plotted
+  - plot 'bordercrossing', 'name', 'vegetationpalm' locations; revise locations text styles for uniqueness
+- `check_data_anomalies.py` reports river, hidden roads; improved messages
+
 ### Changed
 
+- Upgrade to Python >=3.14
 - Dependencies: bump arma3-offline-map-lib to == 0.11.0, remove redundant matplotlib
 - CI: bump actions versions to latest
 

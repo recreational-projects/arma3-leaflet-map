@@ -12,9 +12,11 @@ FeatureGeometryKind = Enum(
 
 FEATURE_GEOMETRIES = {
     # Classify features from 'geojson' root dir:
+    # Generic objects:
+    # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#2-generic-objects
+    "bunker": FeatureGeometryKind.POINT,
     "bush": FeatureGeometryKind.POINT,
     "busstop": FeatureGeometryKind.POINT,
-    "bunker": FeatureGeometryKind.POINT,
     "chapel": FeatureGeometryKind.POINT,
     "church": FeatureGeometryKind.POINT,
     "cross": FeatureGeometryKind.POINT,
@@ -23,13 +25,11 @@ FEATURE_GEOMETRIES = {
     "fuelstation": FeatureGeometryKind.POINT,
     "hospital": FeatureGeometryKind.POINT,
     "lighthouse": FeatureGeometryKind.POINT,
-    "mounts": FeatureGeometryKind.POINT,  # extra attributes not handled yet
     "powersolar": FeatureGeometryKind.POINT,
     "powerwave": FeatureGeometryKind.POINT,
     "powerwind": FeatureGeometryKind.POINT,
     "quay": FeatureGeometryKind.POINT,
     "rock": FeatureGeometryKind.POINT,
-    # rocks not yet handled
     "ruin": FeatureGeometryKind.POINT,
     "shipwreck": FeatureGeometryKind.POINT,
     "stack": FeatureGeometryKind.POINT,
@@ -38,15 +38,30 @@ FEATURE_GEOMETRIES = {
     "tree": FeatureGeometryKind.POINT,
     "view-tower": FeatureGeometryKind.POINT,
     "watertower": FeatureGeometryKind.POINT,
-    # poly lines:
-    "powerline": FeatureGeometryKind.POLY_LINE,
-    "railway": FeatureGeometryKind.POLY_LINE,
-    # polygons:
-    "river": FeatureGeometryKind.POLYGON,
-    "runway": FeatureGeometryKind.POLYGON,
-    "house": FeatureGeometryKind.POLYGON,  # extra attributes not handled yet
-    # multi polygons:
+    # Mounts
+    # https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#13-mounts
+    "mounts": FeatureGeometryKind.POINT,  # extra attributes not handled yet
+    # Houses:
+    # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#3-houses
+    "house": FeatureGeometryKind.POLYGON,  # some extra attributes not handled yet
+    # Rocks
+    # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#4-rocks
+    # "rocks" not yet handled
+    # Forests:
+    # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#5-forests
     "forest": FeatureGeometryKind.MULTI_POLYGON,
+    # Railways
+    # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#6-railways
+    "railway": FeatureGeometryKind.POLY_LINE,
+    # Power lines
+    # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#7-power-lines
+    "powerline": FeatureGeometryKind.POLY_LINE,
+    # Runways
+    # https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#8-runways
+    "runway": FeatureGeometryKind.POLYGON,
+    # Rivers
+    # https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#12-rivers
+    "river": FeatureGeometryKind.POLYGON,
 }
 IGNORED_LOCATIONS = {
     # Features from 'geojson/locations' dir that should not be loaded (yet):

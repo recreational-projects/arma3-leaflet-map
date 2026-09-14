@@ -1,4 +1,4 @@
 INPUT_RELATIVE_DIR = "../../../code-clones/gruppe-adler/meh-data"
 WORKING_RELATIVE_DIR = "../working"
 OUTPUT_RELATIVE_DIR = "../maps"
-PROCESS_UNSUPPORTED_MAPS = true
+PROCESS_UNSUPPORTED_MAPS = false
