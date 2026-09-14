@@ -104,16 +104,15 @@ class TextStyle(BaseStyle):
 GRID_STYLE = LineStyle(color="black", weight=1, opacity=0.25)
 POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     # power infra:
-    "powerwave": MarkerStyle(color="purple", icon_name="house-tsunami"),
     "powersolar": MarkerStyle(color="purple", icon_name="solar-panel"),
+    "powerwave": MarkerStyle(color="purple", icon_name="house-tsunami"),
     "powerwind": MarkerStyle(color="purple", icon_name="fan"),
     # buildings:
-    # "bordercrossing": MarkerStyle(color="gray", icon_name="road-barrier"),
     "bunker": MarkerStyle(color="gray", icon_name="warehouse"),
     "chapel": MarkerStyle(color="gray", icon_name="place-of-worship"),
     "church": MarkerStyle(color="gray", icon_name="church"),
     "cross": MarkerStyle(color="gray", icon_name="cross"),
-    # "fortress": MarkerStyle(color="gray", icon_name="fort-awesome"),
+    "fortress": MarkerStyle(color="gray", icon_name="fort-awesome"),
     "fountain": MarkerStyle(color="gray", icon_name="shower"),
     "fuelstation": MarkerStyle(color="gray", icon_name="gas-pump"),
     "hospital": MarkerStyle(color="gray", icon_name="hospital"),
@@ -125,8 +124,6 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "view-tower": MarkerStyle(color="gray", icon_name="tower-observation"),
     "watertower": MarkerStyle(color="gray", icon_name="droplet"),
     "busstop": MarkerStyle(color="gray", icon_name="bus-simple"),
-    # physical:
-    # "hill": MarkerStyle(color="beige", icon_name="mound"),
     # vegetation:
     "tree": CircleStyle(color="green", radius=2),
     "bush": CircleStyle(color="lightgreen", radius=1.5),
@@ -138,21 +135,26 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "rock": CircleMarkerStyle(color="black", radius=3),
 }
 TEXT_STYLES = {
+    # ref: https://community.bistudio.com/wiki/Location#Location_Types
+    "airport": TextStyle(color="slategray"),
+    "bordercrossing": TextStyle(color="darkred"),  # Has icon in A3
+    "citycenter": TextStyle(),  # not named?
+    "hill": TextStyle(color="brown"),  # not always named. Has icon in A3
+    "name": TextStyle(color="dimgray"),
     "namecitycapital": TextStyle(color="black", font_size="1.5rem"),
     "namecity": TextStyle(color="black", font_size="1.25rem"),
     "namevillage": TextStyle(color="black"),
     "namelocal": TextStyle(color="dimgray", font_style="oblique"),
     "namemarine": TextStyle(color="blue"),
     # "namewaterlocal": TextStyle(color="blue", font_style="oblique"),
-    "airport": TextStyle(color="dimgray"),
-    "hill": TextStyle(color="dimgray"),  # not always named
-    "rockarea": TextStyle(color="dimgray"),  # not always named?
-    "citycenter": TextStyle(),  # not named?
-    "vegetationbroadleaf": TextStyle(color="green"),
-    "vegetationvineyard": TextStyle(color="green"),
-    "vegetationfir": TextStyle(color="green"),
-    # "vegetationpalm": TextStyle(color="green"),
-    "viewpoint": TextStyle(color="red"),
+    "rockarea": TextStyle(
+        color="brown", font_style="oblique"
+    ),  # not always named?  # Has icon in A3
+    "vegetationbroadleaf": TextStyle(color="green"),  # Has icon in A3
+    "vegetationvineyard": TextStyle(color="green"),  # Has icon in A3
+    "vegetationfir": TextStyle(color="green"),  # Has icon in A3
+    "vegetationpalm": TextStyle(color="green"),  # Has icon in A3
+    "viewpoint": TextStyle(color="red"),  # Has icon in A3
 }
 LINE_STYLES: dict[str, LineStyle] = {
     "powerline": LineStyle(color="purple", weight=1),

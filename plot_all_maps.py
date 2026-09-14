@@ -2,7 +2,7 @@
 Render multiple maps.
 
 By default, only supported maps are rendered.
-Edit `config.toml` so that `process_unsupported_maps = true` to override.
+Edit `config.toml` so that `PROCESS_UNSUPPORTED_MAPS = true` to override.
 """
 
 import logging
@@ -20,7 +20,7 @@ from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
 from src.model.arma3_leaflet_map import Arma3LeafletMap
 from src.model.arma3_map_data import Arma3MapData
 from src.setup import INPUT_PATH, OUTPUT_PATH, PROCESS_UNSUPPORTED_MAPS, setup_logging
-from src.supported_maps import SUPPORTED_MAPS
+from src.supported_maps import UNSUPPORTED_MAPS
 
 LOG_LEVEL = "INFO"
 
@@ -36,7 +36,7 @@ def main() -> None:
     if PROCESS_UNSUPPORTED_MAPS:
         data_dirs = source_dirs
     else:
-        data_dirs = [dir_ for dir_ in source_dirs if dir_.stem in SUPPORTED_MAPS]
+        data_dirs = [dir_ for dir_ in source_dirs if dir_.stem not in UNSUPPORTED_MAPS]
 
     existing_plots = {fp.stem for fp in OUTPUT_PATH.iterdir()}
     dirs_to_plot = []
