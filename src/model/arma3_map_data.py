@@ -8,10 +8,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
 
 from arma3_offline_map_lib.grad_meh.dem import DEM
-from arma3_offline_map_lib.grad_meh.geojson import (
-    geojson_gz_files_in_dir,
-    load_features_from_file,
-)
+from arma3_offline_map_lib.grad_meh.geojson import Feature, geojson_gz_files_in_dir
 from arma3_offline_map_lib.grad_meh.metadata import Metadata
 from rich.markup import escape
 
@@ -287,7 +284,7 @@ def _load_features_from_file(
     *, path: Path, limit: int | None = None, world_name: str
 ) -> list[geojson.Feature]:
     """Return features from a `.geojson.gz` file."""
-    features = load_features_from_file(path)
+    features = Feature.list_from_file(path)
     if not features:
         log_msg = f"[{world_name}] no valid features in `{path.name}`."
         _LOGGER.warning(log_msg)
