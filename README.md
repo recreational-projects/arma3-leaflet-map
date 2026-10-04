@@ -43,9 +43,8 @@ Edit `config.toml` so that:
 - `output_relative_dir` points to the folder where the maps should be saved
 
 ### To render a single map
-Edit `plot_map.py` so that `MAP_NAME` points to the required map, then:
 ```shell
-uv run plot_map.py
+uv run plot_map.py MAP_NAME
 ```
 
 ### To render all maps in the folder
