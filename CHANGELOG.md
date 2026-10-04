@@ -4,11 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## UNRELEASED - 2026-10-04
+
+### Added
+
+- MAP_NAME arg to `plot_map.py`
+
 ## [0.8.0] - 2026-09-14
 
 ### Added
 
-- Improved map/ feature support
+- Improved map / feature support
   - extend supported maps
   - list known unsupported maps
   - plot 'fortress' generic objects – all generic objects are now plotted
