@@ -19,8 +19,7 @@ from typing import TYPE_CHECKING
 
 from arma3_offline_map_lib.grad_meh.metadata import Metadata
 
-from src.setup import INPUT_PATH, PROCESS_UNSUPPORTED_MAPS, setup_logging
-from src.supported_maps import SUPPORTED_MAPS
+from src.setup import INPUT_PATH, setup_logging
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -32,19 +31,18 @@ LOGGER = logging.getLogger("rich")
 def main() -> None:
     """Script entry point."""
     setup_logging(LOG_LEVEL)
-
-    source_dirs = INPUT_PATH.iterdir()
-    if PROCESS_UNSUPPORTED_MAPS:
-        data_dirs = source_dirs
-    else:
-        data_dirs = [dir_ for dir_ in source_dirs if dir_.stem in SUPPORTED_MAPS]
-
-    for dir_ in sorted(data_dirs):
+    source_dirs = [p for p in INPUT_PATH.iterdir() if p.is_dir()]
+    checked_count = 0
+    for dir_ in sorted(source_dirs):
         world_name_ = _metadata_checks(dir_=dir_)
         geojson_path = dir_ / "geojson"
         _geojson_checks(dir_=geojson_path, world_name=world_name_)
+        checked_count += 1
         log_msg = f"[{world_name_}] checked."
         LOGGER.info(log_msg)
+
+    log_msg = f"Data for {checked_count} maps checked."
+    LOGGER.info(log_msg)
 
 
 def _metadata_checks(dir_: Path) -> str:
