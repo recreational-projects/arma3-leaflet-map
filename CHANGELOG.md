@@ -8,9 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Extend supported maps
 - MAP_NAME arg to `plot_map.py`
 - `check_data_anomalies.py` always checks all data, not just supported maps
 - CI: Add Windows
+
+### Changed
+
+- Dependencies: bump arma3-offline-map-lib to 0.13.0
+
 
 ## [0.8.0] - 2026-09-14
 
@@ -26,7 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Upgrade to Python >=3.14
-- Dependencies: bump arma3-offline-map-lib to == 0.11.0, remove redundant matplotlib
+- Dependencies: bump arma3-offline-map-lib to 0.11.0, remove redundant matplotlib, pillow
 - CI: bump actions versions to latest
 
 ## [0.7.1] - 2026-07-29
@@ -37,7 +43,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Dependencies: bump arma3-offline-map-lib to == 0.7.0
+- Dependencies: bump arma3-offline-map-lib to 0.7.0
 
 ## [0.7.0] - 2026-07-27
 
