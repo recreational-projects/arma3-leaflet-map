@@ -164,13 +164,15 @@ _TRAIL_COLOR = "gray"
 _TRACK_COLOR = "white"
 _ROAD_COLOR = "yellow"
 _MAIN_ROAD_COLOR = "orange"
+_TRAIL_STYLE = LineStyle(color=_TRAIL_COLOR, weight=1, dash_array="4 2")
 
 ROAD_STYLES: dict[str, LineStyle] = {
     "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
-    "trail": LineStyle(color=_TRAIL_COLOR, weight=1, dash_array="4 2"),
-    "track": LineStyle(color="white", weight=2),
-    "road": LineStyle(color="yellow", weight=2),
-    "main_road": LineStyle(color="orange", weight=4),
+    "trail": _TRAIL_STYLE,
+    "path": _TRAIL_STYLE,  # only seen in `tem_chernarusw`
+    "track": LineStyle(color=_TRACK_COLOR, weight=2),
+    "road": LineStyle(color=_ROAD_COLOR, weight=2),
+    "main_road": LineStyle(color=_MAIN_ROAD_COLOR, weight=4),
 }
 """For roads, dict order determines plot order."""
 
