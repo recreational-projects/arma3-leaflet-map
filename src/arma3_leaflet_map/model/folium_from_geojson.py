@@ -365,7 +365,8 @@ def _ensure_geometry(
                 return geometry
 
     err_msg = (
-        f"Unexpected non-`{expected_geometry_type}` geometry "
-        f"when plotting '{feature_kind}' as `{folium_object_name}`."
+        f"Unexpected `{type(geometry).__name__}` geometry "
+        f"when plotting '{feature_kind}' as `{folium_object_name}; "
+        f"expected `{expected_geometry_type.__name__}`."
     )
     raise TypeError(err_msg)

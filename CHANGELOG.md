@@ -8,8 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Plot 'rocks' (a.k.a. rock areas)
 - Don't plot 'invisible', 'strategic' locations
 - `src/check_data_anomalies.py` reports unhandled object kinds
+
+### Changed
+
+- Script paths
+- Dependencies:
+  - require arma3-offline-map-lib >= 0.14.0
+  - indirect dependencies: bump urllib3 to 2.8.0 (latest), virtualenv to v21.14.5 (latest)
 
 ### Fixed
 
@@ -28,10 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Dependencies:
-  - bump arma3-offline-map-lib to 0.13.0
+  - require arma3-offline-map-lib >= 0.13.0
   - indirect dependencies: bump urllib3 to 2.8.0 (latest), virtualenv to v21.14.5 (latest)
-
-
 
 ## [0.8.0] - 2026-09-14
 
@@ -47,18 +53,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Upgrade to Python >=3.14
-- Dependencies: bump arma3-offline-map-lib to 0.11.0, remove redundant matplotlib, pillow
+- Dependencies: require arma3-offline-map-lib >= 0.11.0, remove redundant matplotlib, pillow
 - CI: bump actions versions to latest
 
 ## [0.7.1] - 2026-07-29
 
+### Changed
+
+- Dependencies: require arma3-offline-map-lib >= 0.7.0
+
 ### Fixed
 
 - Territories and control points were flipped in x/y
-
-### Changed
-
-- Dependencies: bump arma3-offline-map-lib to 0.7.0
 
 ## [0.7.0] - 2026-07-27
 
@@ -83,16 +89,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - pre-commit
 - CI: `ruff format`
 
-### Fixed
-
-- Preview image filepath handling
-
 ### Changed
 
 - Improved `README.md`
 - CI: use existing `uv.lock`, use pyrefly instead of ty for type checking
-- Dependencies: bump arma3-offline-map-lib to == 0.6.0
+- Dependencies: require arma3-offline-map-lib to == 0.6.0
 
+### Fixed
+
+- Preview image filepath handling
 
 ## [0.5.0] - 2026-06-24
 

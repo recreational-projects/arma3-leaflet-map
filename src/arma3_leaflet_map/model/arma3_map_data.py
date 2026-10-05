@@ -7,6 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Self
 
+import msgspec
 from arma3_offline_map_lib.grad_meh.dem import DEM
 from arma3_offline_map_lib.grad_meh.geojson import Feature, geojson_gz_files_in_dir
 from arma3_offline_map_lib.grad_meh.metadata import Metadata
@@ -284,9 +285,15 @@ def _load_features_from_file(
     *, path: Path, limit: int | None = None, world_name: str
 ) -> list[geojson.Feature]:
     """Return features from a `.geojson.gz` file."""
-    features = Feature.list_from_file(path)
+    try:
+        features = Feature.list_from_file(path)
+    except msgspec.ValidationError:
+        log_msg = f"[{world_name}] error decoding '{path.name}'; skipping."
+        _LOGGER.error(log_msg)  # noqa: TRY400
+        return []
+
     if not features:
-        log_msg = f"[{world_name}] no valid features in `{path.name}`."
+        log_msg = f"[{world_name}] no features in `{path.name}`."
         _LOGGER.warning(log_msg)
         return []
 

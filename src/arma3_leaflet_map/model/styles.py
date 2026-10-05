@@ -102,6 +102,8 @@ class TextStyle(BaseStyle):
 
 
 GRID_STYLE = LineStyle(color="black", weight=1, opacity=0.25)
+"""Style properties for grid lines."""
+
 POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     # power infra:
     "powersolar": MarkerStyle(color="purple", icon_name="solar-panel"),
@@ -134,6 +136,8 @@ POINT_STYLES: dict[str, MarkerStyle | CircleMarkerStyle | CircleStyle] = {
     "mounts": CircleMarkerStyle(color="beige", radius=7),
     "rock": CircleMarkerStyle(color="black", radius=3),
 }
+"""Style properties for point features."""
+
 TEXT_STYLES = {
     # ref: https://community.bistudio.com/wiki/Location#Location_Types
     "airport": TextStyle(color="slategray"),
@@ -156,10 +160,14 @@ TEXT_STYLES = {
     "vegetationpalm": TextStyle(color="green"),  # Has icon in A3
     "viewpoint": TextStyle(color="red"),  # Has icon in A3
 }
+"""Style properties for text features."""
+
 LINE_STYLES: dict[str, LineStyle] = {
     "powerline": LineStyle(color="purple", weight=1),
     "railway": LineStyle(color="black", weight=1),
 }
+"""Style properties for non-road line features."""
+
 _TRAIL_COLOR = "gray"
 _TRACK_COLOR = "white"
 _ROAD_COLOR = "yellow"
@@ -174,7 +182,8 @@ ROAD_STYLES: dict[str, LineStyle] = {
     "road": LineStyle(color=_ROAD_COLOR, weight=2),
     "main_road": LineStyle(color=_MAIN_ROAD_COLOR, weight=4),
 }
-"""For roads, dict order determines plot order."""
+# For roads, dict order determines plot order.
+"""Style properties for road features."""
 
 BRIDGE_STYLES: dict[str, PolygonStyle] = {
     "trail-bridge": PolygonStyle(color=_TRAIL_COLOR, fill_color=_TRAIL_COLOR),
@@ -184,7 +193,8 @@ BRIDGE_STYLES: dict[str, PolygonStyle] = {
         color=_MAIN_ROAD_COLOR, fill_color=_MAIN_ROAD_COLOR
     ),
 }
-"""For bridges, dict order determines plot order."""
+# For bridges, dict order determines plot order.
+"""Style properties for bridge features."""
 
 POLYGON_STYLES: dict[str, PolygonStyle] = {
     "forest": PolygonStyle(color="green", fill_color="green", show=False),
@@ -192,8 +202,10 @@ POLYGON_STYLES: dict[str, PolygonStyle] = {
         color=f"rgb{WATER_COLOR_RGB}", fill_color=f"rgb{WATER_COLOR_RGB}"
     ),
     "runway": PolygonStyle(color="gray", fill_color="gray"),
+    "rocks": PolygonStyle(color="gray", fill_color="gray"),
 }
-"""'house' layer uses default `PolygonStyle` with color retrieved from GeoJSON."""
+# 'house' layer uses default `PolygonStyle` with color retrieved from GeoJSON.
+"""Style properties for polygon features."""
 
 TERRITORY_STYLE = PolygonStyle(color="red", fill=False, weight=0.5)
 CONTROL_POINT_STYLE = TextStyle(color="red")

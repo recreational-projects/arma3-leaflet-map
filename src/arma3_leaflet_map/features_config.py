@@ -46,7 +46,7 @@ FEATURE_GEOMETRIES = {
     "house": FeatureGeometryKind.POLYGON,  # some extra attributes not handled yet
     # Rocks
     # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#4-rocks
-    # "rocks" not yet handled
+    "rocks": FeatureGeometryKind.MULTI_POLYGON,
     # Forests:
     # ref: https://github.com/gruppe-adler/grad_meh/blob/master/docs/geojson_spec.md#5-forests
     "forest": FeatureGeometryKind.MULTI_POLYGON,
