@@ -68,6 +68,8 @@ IGNORED_LOCATIONS = {
     "flatarea",
     "flatareacity",
     "flatareacitysmall",
+    "invisible",  # seen in `ww2_omaha_beach`
+    "strategic",  # seen in `spex_carentan`
     "strongpointarea",
 }
 BRIDGE_ROADS = {
