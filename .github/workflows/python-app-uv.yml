@@ -1,4 +1,4 @@
-name: Python 3.14 application with uv on Ubuntu
+name: Python 3.14 application with uv on Ubuntu + Windows
 
 on:
   push:
@@ -10,31 +10,34 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  ci:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest ]
 
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v7
+    - name: Checkout repo
+      uses: actions/checkout@v7
 
-      - name: Install uv - latest if not defined in `pyproject.toml`
-        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+    - name: Install uv - latest if not defined in `pyproject.toml`
+      # Action version does not determine uv version to install
+      uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
-      - name: Setup Python
-        # Faster than using uv, as it caches Python on GitHub runner
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.14"
+    - name: Setup Python
+      # Faster than using uv, as it caches Python on GitHub runner
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.14"
 
-      - name: Lint with ruff
-        # by default: exit with error if rule violations
-        run: uv run --locked ruff check --output-format=github
+    - name: Lint with ruff
+      # by default: exit with error if rule violations
+      run: uv run --locked ruff check --output-format=github
 
-      - name: Lint format with ruff
-        # by default: exit with error if rule violations
-        run: uv run --locked ruff format
+    - name: Lint format with ruff
+      # by default: exit with error if rule violations
+      run: uv run --locked ruff format
 
-      - name: Type check with pyrefly
-        # by default: exit with error if rule violations
-        run: uv run --locked pyrefly check --output-format=github
+    - name: Type check with pyrefly
+      # by default: exit with error if rule violations
+      run: uv run --locked pyrefly check --output-format=github
