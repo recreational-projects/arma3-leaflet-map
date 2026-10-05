@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Plot 'rocks' (a.k.a. rock areas)
 - Don't plot 'invisible', 'strategic' locations
 - `check_data_anomalies.py` reports unhandled object kinds
 
@@ -30,8 +31,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Dependencies:
   - bump arma3-offline-map-lib to 0.13.0
   - indirect dependencies: bump urllib3 to 2.8.0 (latest), virtualenv to v21.14.5 (latest)
-
-
 
 ## [0.8.0] - 2026-09-14
 

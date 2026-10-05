@@ -192,6 +192,7 @@ POLYGON_STYLES: dict[str, PolygonStyle] = {
         color=f"rgb{WATER_COLOR_RGB}", fill_color=f"rgb{WATER_COLOR_RGB}"
     ),
     "runway": PolygonStyle(color="gray", fill_color="gray"),
+    "rocks": PolygonStyle(color="black", fill_color="black"),
 }
 """'house' layer uses default `PolygonStyle` with color retrieved from GeoJSON."""
 
