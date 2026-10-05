@@ -9,13 +9,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - Extend supported maps
-- MAP_NAME arg to `plot_map.py`
-- `check_data_anomalies.py` always checks all data, not just supported maps
+- Don't plot hidden ('hide') roads
+- `plot_map.py` MAP_NAME argument
+- `check_data_anomalies.py` always checks all map data, not just supported maps
 - CI: Add Windows
 
 ### Changed
 
-- Dependencies: bump arma3-offline-map-lib to 0.13.0
+- Dependencies:
+  - bump arma3-offline-map-lib to 0.13.0
+  - indirect dependencies: bump urllib3 to 2.8.0 (latest), virtualenv to v21.14.5 (latest)
+
 
 
 ## [0.8.0] - 2026-09-14
