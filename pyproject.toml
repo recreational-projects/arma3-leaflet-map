@@ -13,10 +13,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "pre-commit==4.6.2",
-    "pyrefly==1.3.2",
+    "pre-commit==4.7.0",
+    "pyrefly==1.4.0",
     "pytest==9.1.1",
-    "ruff==0.16.10",
+    "ruff==0.17.1",
 ]
 
 [tool.ruff.lint]
@@ -42,7 +42,7 @@ extend-safe-fixes = [
 ]
 
 [tool.uv.sources]
-arma3-offline-map-lib = { git = "https://github.com/recreational-projects/arma3-offline-map-lib.git", rev = "v0.13.0" }
+arma3-offline-map-lib = { git = "https://github.com/recreational-projects/arma3-offline-map-lib.git", rev = "v0.14.0" }
 
 [tool.pyrefly]
 project-includes = ["**/*.py*"]

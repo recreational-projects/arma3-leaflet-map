@@ -5,7 +5,7 @@ SUPPORTED_MAPS = {
     "altis",
     "blud_vidda",
     "bornholm",
-    "brf_sumava",
+    "brf_sumava",  # rocks issues
     "chernarus",  # from CUP
     "chernarus_summer",  # from CUP
     "chernarus_winter",  # from CUP
@@ -22,7 +22,7 @@ SUPPORTED_MAPS = {
     "iron_excelsior_tobruk",
     "isladuala3",
     "kapaulio",
-    "kunduz",
+    # "kunduz",  # rocks issues
     "kunduz_valley",
     "lingor3",
     "lythium",
@@ -35,18 +35,18 @@ SUPPORTED_MAPS = {
     "rhspkl",  # RHS Prei Khmaoch Luong
     "ruha",
     "sara",
-    "sehreno",
+    "sehreno",  # rocks issues
     "spex_utah_beach",  # from Spearhead Extended
     "stratis",
     "stubbhult",
     "takistan",  # from CUP
     "tanoa",
-    "tem_anizay",
+    "tem_anizay",  # rocks issues
     "tem_chernarus",  # NF Svartmarka from Northern Fronts
     "tem_chernarusw",  # NF Svartmarka winter from Northern Fronts
     "tem_kujari",
     "tembelan",
-    "umb_armavir",
+    "umb_armavir",  # rocks issues
     "umb_colombia",
     "vt7",  # Virolahti - Valtatie 7
     "vtf_korsac",
@@ -54,7 +54,6 @@ SUPPORTED_MAPS = {
     "winthera3",
     "ww2_omaha_beach",
     "yulakia",
-    "zargabad",
 }
 UNSUPPORTED_MAPS = {
     "cam_lao_nam",  # JSON issues
@@ -62,10 +61,12 @@ UNSUPPORTED_MAPS = {
     "drakovac",  # JSON issues
     "esseker",  # JSON issues
     "i44_omaha_v2",  # no meta.json
+    "kunduz",  # rocks issues
     "namalsk",  # missing all roads
     "pja310",  # G.O.S. Al Rayak - missing all roads
     "regero",  # missing DEM
     "spex_carentan",  # from Spearhead Extended - no meta.json
     "staszow",  # missing all roads
     "staszowwinter",  # missing all roads
+    "zargabad",  # rocks issues
 }
