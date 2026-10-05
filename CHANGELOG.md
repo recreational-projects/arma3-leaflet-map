@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Don't plot 'invisible', 'strategic' locations
 - `check_data_anomalies.py` reports unhandled object kinds
 
 ### Fixed
