@@ -38,9 +38,9 @@ git clone https://github.com/recreational-projects/arma3-leaflet-map
 
 ## Usage
 Edit `config.toml` so that:
-- `input_relative_dir` points to the folder containing
+- `INPUT_RELATIVE_DIR` points to the folder containing
   the grad_meh maps data
-- `output_relative_dir` points to the folder where the maps should be saved
+- `OUTPUT_RELATIVE_DIR` points to the folder where the maps should be saved
 
 ### To render a single map
 ```shell
@@ -56,7 +56,7 @@ Each map can take up to around 60&nbsp;s to produce.
 
 ## Output
 
-Each Leaflet map is saved in `output_relative_dir` as a self-contained HTML file.
+Each Leaflet map is saved in `OUTPUT_RELATIVE_DIR` as a self-contained HTML file.
 Open in a browser to view.
 
 NB: the HTML files can be large, up to about 150&nbsp;MB.
@@ -78,3 +78,7 @@ NB: the HTML files can be large, up to about 150&nbsp;MB.
 ```shell
 uv run check_data_anomalies.py
 ```
+
+### Supported and unsupported maps
+
+See https://github.com/recreational-projects/arma3-leaflet-map/blob/main/src/supported_maps.py

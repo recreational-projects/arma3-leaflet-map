@@ -6,14 +6,14 @@ SUPPORTED_MAPS = {
     "blud_vidda",
     "bornholm",
     "brf_sumava",
-    "chernarus",  # CUP
-    "chernarus_summer",  # CUP
-    "chernarus_winter",  # CUP
+    "chernarus",  # from CUP
+    "chernarus_summer",  # from CUP
+    "chernarus_winter",  # from CUP
     "chernarusredux",
     "cup_chernarus_a3",  # Chernarus 2020 from CUP 2.0
     "cup_zargabad_a3",  # Zargabad 2025 from CUP 2.0
     "egl_laghisola",
-    "enoch",
+    "enoch",  # Livonia
     "fapovo",
     "gm_weferlingen_summer",
     "gm_weferlingen_winter",
@@ -32,23 +32,23 @@ SUPPORTED_MAPS = {
     "napfwinter",
     "optre_madrigal",
     "panthera3",
-    "rhspkl",
+    "rhspkl",  # RHS Prei Khmaoch Luong
     "ruha",
     "sara",
     "sehreno",
-    "spex_utah_beach",
+    "spex_utah_beach",  # from Spearhead Extended
     "stratis",
     "stubbhult",
-    "takistan",  # CUP
+    "takistan",  # from CUP
     "tanoa",
     "tem_anizay",
-    "tem_chernarus",
-    "tem_chernarusw",
+    "tem_chernarus",  # NF Svartmarka from Northern Fronts
+    "tem_chernarusw",  # NF Svartmarka winter from Northern Fronts
     "tem_kujari",
     "tembelan",
     "umb_armavir",
     "umb_colombia",
-    "vt7",
+    "vt7",  # Virolahti - Valtatie 7
     "vtf_korsac",
     "vtf_korsac_winter",
     "winthera3",
@@ -65,7 +65,7 @@ UNSUPPORTED_MAPS = {
     "namalsk",  # missing all roads
     "pja310",  # G.O.S. Al Rayak - missing all roads
     "regero",  # missing DEM
-    "spex_carentan",  # no meta.json
+    "spex_carentan",  # from Spearhead Extended - no meta.json
     "staszow",  # missing all roads
     "staszowwinter",  # missing all roads
 }
