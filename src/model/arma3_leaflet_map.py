@@ -200,28 +200,25 @@ class Arma3LeafletMap:
         Road kinds that don't have a style are plotted last with a default style.
         """
         multi_series_ = self.data.roads
-        remaining_road_kinds = set(multi_series_.keys())
-        for feature_kind, style in styles.ROAD_STYLES.items():
-            remaining_road_kinds.discard(feature_kind)
-            if feature_kind == "hide" and not plot_hidden:
-                continue
+        if "hide" in multi_series_ and plot_hidden is False:
+            del multi_series_["hide"]
+            log_msg = "- Not plotting 'hide' roads."
+            _LOGGER.warning(log_msg)
 
+        for feature_kind in multi_series_:
             features = multi_series_.get(feature_kind)
-            if features:
-                group = folium_from_geojson.poly_line_group(
-                    feature_kind=feature_kind, features=features, style=style
-                )
-                group.add_to(self.folium_map)
+            if not features:
+                log_msg = f"- No features for '{feature_kind}'."
+                _LOGGER.warning(log_msg)
+            else:
+                style_ = styles.ROAD_STYLES.get(feature_kind)
+                if not style_:
+                    log_msg = f"- No style in ROAD_STYLES for '{feature_kind}'."
+                    _LOGGER.error(log_msg)
+                    style_ = styles.LineStyle()
 
-        for feature_kind in remaining_road_kinds:
-            log_msg = f"- No style in ROAD_STYLES for '{feature_kind}'."
-            _LOGGER.error(log_msg)
-            features = multi_series_.get(feature_kind)
-            if features:
                 group = folium_from_geojson.poly_line_group(
-                    feature_kind=feature_kind,
-                    features=features,
-                    style=styles.LineStyle(),
+                    feature_kind=feature_kind, features=features, style=style_
                 )
                 group.add_to(self.folium_map)
 

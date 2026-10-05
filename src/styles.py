@@ -166,7 +166,7 @@ _ROAD_COLOR = "yellow"
 _MAIN_ROAD_COLOR = "orange"
 
 ROAD_STYLES: dict[str, LineStyle] = {
-    # "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"), # dots
+    "hide": LineStyle(color="red", weight=10, dash_array="0.001 20"),  # dots
     "trail": LineStyle(color=_TRAIL_COLOR, weight=1, dash_array="4 2"),
     "track": LineStyle(color="white", weight=2),
     "road": LineStyle(color="yellow", weight=2),
