@@ -81,4 +81,4 @@ uv run src/check_data_anomalies.py
 
 ### Supported and unsupported maps
 
-See https://github.com/recreational-projects/arma3-leaflet-map/blob/main/src/supported_maps.py
+[Listed here](https://github.com/recreational-projects/arma3-leaflet-map/blob/main/src/arma3_leaflet_map/supported_maps.py).

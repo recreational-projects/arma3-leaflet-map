@@ -56,17 +56,17 @@ SUPPORTED_MAPS = {
     "yulakia",
 }
 UNSUPPORTED_MAPS = {
-    "cam_lao_nam",  # JSON issues
+    "cam_lao_nam",  # forest, rocks GeoJSON issues
     "dingor",  # no meta.json
-    "drakovac",  # JSON issues
-    "esseker",  # JSON issues
+    "drakovac",  # airport, namelocal GeoJSON issues
+    "esseker",  # house GeoJSON issues; no other polygon features
     "i44_omaha_v2",  # no meta.json
-    "kunduz",  # rocks issues
+    "kunduz",  # rocks GeoJSON issues
     "namalsk",  # missing all roads
     "pja310",  # G.O.S. Al Rayak - missing all roads
     "regero",  # missing DEM
     "spex_carentan",  # from Spearhead Extended - no meta.json
     "staszow",  # missing all roads
     "staszowwinter",  # missing all roads
-    "zargabad",  # rocks issues
+    "zargabad",  # rocks GeoJSON issues
 }
