@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     import folium
     import shapely
 
-    from src.styles import PolygonStyle
+    from .styles import PolygonStyle
 
 
 _LOGGER = logging.getLogger(__name__)

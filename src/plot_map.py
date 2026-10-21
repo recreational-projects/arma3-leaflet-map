@@ -3,10 +3,10 @@
 import argparse
 import logging
 
-from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
-from src.model.arma3_leaflet_map import Arma3LeafletMap
-from src.model.arma3_map_data import Arma3MapData
-from src.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
+from arma3_leaflet_map.features_config import IGNORED_FEATURE_KIND_THRESHOLD
+from arma3_leaflet_map.model.a3_leaflet_map import A3LeafletMap
+from arma3_leaflet_map.model.arma3_map_data import Arma3MapData
+from arma3_leaflet_map.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
 
 LOG_LEVEL = "INFO"
 
@@ -32,7 +32,7 @@ def main() -> None:
         err_msg = f"Unexpected data issue with {INPUT_PATH / args.map_name}."
         raise RuntimeError(err_msg)
 
-    map_ = Arma3LeafletMap(map_data)
+    map_ = A3LeafletMap(map_data)
     map_.render(OUTPUT_PATH)
 
 

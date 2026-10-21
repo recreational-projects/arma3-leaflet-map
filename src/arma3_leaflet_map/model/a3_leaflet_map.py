@@ -11,10 +11,14 @@ import shapely
 from arma3_offline_map_lib.position_2d import Position2D
 from rich.markup import escape
 
-from src import styles
-from src.setup import WORKING_PATH
+from arma3_leaflet_map.setup import WORKING_PATH
 
-from . import folium_from_control_points, folium_from_geojson, folium_from_shapely
+from . import (
+    folium_from_control_points,
+    folium_from_geojson,
+    folium_from_shapely,
+    styles,
+)
 from .plot_coordinate import PlotCoordinate
 
 if TYPE_CHECKING:
@@ -36,7 +40,7 @@ class TerritoryControlPoint:
 
 
 @dataclass
-class Arma3LeafletMap:
+class A3LeafletMap:
     """TODO."""
 
     # init:

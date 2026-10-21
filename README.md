@@ -44,12 +44,12 @@ Edit `config.toml` so that:
 
 ### To render a single map
 ```shell
-uv run plot_map.py MAP_NAME
+uv run src/plot_map.py MAP_NAME
 ```
 
 ### To render all maps in the folder
 ```shell
-uv run plot_all_maps.py
+uv run src/plot_all_maps.py
 ```
 
 Each map can take up to around 60&nbsp;s to produce.
@@ -76,7 +76,7 @@ NB: the HTML files can be large, up to about 150&nbsp;MB.
 
 #### Report data anomalies without rendering maps
 ```shell
-uv run check_data_anomalies.py
+uv run src/check_data_anomalies.py
 ```
 
 ### Supported and unsupported maps

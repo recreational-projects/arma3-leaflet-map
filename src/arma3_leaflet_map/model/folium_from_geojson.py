@@ -8,7 +8,9 @@ from typing import TYPE_CHECKING
 import folium
 from arma3_offline_map_lib.grad_meh import geojson
 
-from src.styles import (
+from .folium import create_polygon, empty_feature_group
+from .plot_coordinate import PlotCoordinate
+from .styles import (
     CircleMarkerStyle,
     CircleStyle,
     LineStyle,
@@ -16,9 +18,6 @@ from src.styles import (
     PolygonStyle,
     TextStyle,
 )
-
-from .folium import create_polygon, empty_feature_group
-from .plot_coordinate import PlotCoordinate
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Sequence

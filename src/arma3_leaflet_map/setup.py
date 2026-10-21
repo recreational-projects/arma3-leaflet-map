@@ -9,15 +9,14 @@ from typing import TYPE_CHECKING, Any
 
 from rich.logging import RichHandler
 
-from src import styles
-from src.strings import format_iterable_of_str
+from .model import styles
+from .strings import format_iterable_of_str
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
 _LOGGER = logging.getLogger(__name__)
-
-_BASE_PATH = Path(__file__).resolve().parent
+_BASE_PATH = Path(__file__).resolve().parent.parent.parent
 
 
 def setup_logging(level: str) -> None:
@@ -49,7 +48,7 @@ def _duplicates(seq: Sequence[Any]) -> set[Any]:
     return {val for val in seq if (val in seen or seen.add(val))}
 
 
-with (_BASE_PATH / "../config.toml").open(mode="rb") as f:
+with (_BASE_PATH / "config.toml").open(mode="rb") as f:
     config = tomllib.load(f)
     INPUT_PATH = _BASE_PATH / config["INPUT_RELATIVE_DIR"]
     WORKING_PATH = _BASE_PATH / config["WORKING_RELATIVE_DIR"]
