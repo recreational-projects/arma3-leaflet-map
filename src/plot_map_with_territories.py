@@ -5,10 +5,10 @@ from typing import Any
 
 from arma3_offline_map_lib.position_2d import Position2D
 
-from src.features_config import IGNORED_FEATURE_KIND_THRESHOLD
-from src.model.arma3_leaflet_map import Arma3LeafletMap, TerritoryControlPoint
-from src.model.arma3_map_data import Arma3MapData
-from src.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
+from arma3_leaflet_map.features_config import IGNORED_FEATURE_KIND_THRESHOLD
+from arma3_leaflet_map.model.a3_leaflet_map import A3LeafletMap, TerritoryControlPoint
+from arma3_leaflet_map.model.arma3_map_data import Arma3MapData
+from arma3_leaflet_map.setup import INPUT_PATH, OUTPUT_PATH, setup_logging
 
 MAP_NAME = "rhspkl"
 LOG_LEVEL = "INFO"
@@ -71,7 +71,7 @@ def main() -> None:
         raise RuntimeError(err_msg)
 
     cp_data = [x for xs in CONTROL_POINTS.values() for x in xs]
-    map_ = Arma3LeafletMap(
+    map_ = A3LeafletMap(
         map_data, territory_control_points=control_points_from_data(cp_data)
     )
     map_.render(OUTPUT_PATH)

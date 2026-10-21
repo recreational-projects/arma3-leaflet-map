@@ -15,9 +15,8 @@ from .plot_coordinate import PlotCoordinate
 if TYPE_CHECKING:
     from collections.abc import Collection
 
-    from src.styles import TextStyle
-
-    from .arma3_leaflet_map import TerritoryControlPoint
+    from .a3_leaflet_map import TerritoryControlPoint
+    from .styles import TextStyle
 
 
 def text_marker_group(

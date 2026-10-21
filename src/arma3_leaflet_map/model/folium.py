@@ -10,9 +10,8 @@ import folium
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from src.styles import PolygonStyle
-
     from .plot_coordinate import PlotCoordinate
+    from .styles import PolygonStyle
 
 _LOGGER = logging.getLogger(__name__)
 

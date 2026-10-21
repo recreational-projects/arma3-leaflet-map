@@ -12,14 +12,14 @@ from arma3_offline_map_lib.grad_meh.geojson import Feature, geojson_gz_files_in_
 from arma3_offline_map_lib.grad_meh.metadata import Metadata
 from rich.markup import escape
 
-from src.features_config import (
+from arma3_leaflet_map.features_config import (
     BRIDGE_ROADS,
     FEATURE_GEOMETRIES,
     IGNORED_FEATURE_KIND_THRESHOLD,
     IGNORED_LOCATIONS,
     FeatureGeometryKind,
 )
-from src.strings import format_iterable_of_str
+from arma3_leaflet_map.strings import format_iterable_of_str
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Container, Mapping

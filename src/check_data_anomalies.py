@@ -21,8 +21,9 @@ from typing import TYPE_CHECKING
 from arma3_offline_map_lib.grad_meh.geojson import geojson_gz_files_in_dir
 from arma3_offline_map_lib.grad_meh.metadata import Metadata
 
-from src import features_config, styles
-from src.setup import INPUT_PATH, setup_logging
+from arma3_leaflet_map import features_config
+from arma3_leaflet_map.model import styles
+from arma3_leaflet_map.setup import INPUT_PATH, setup_logging
 
 if TYPE_CHECKING:
     from pathlib import Path
