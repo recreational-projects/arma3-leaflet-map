@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## UNRELEASED - tbc
+## [0.10.0] - 2026-10-21
 
 ### Added
 
@@ -103,6 +103,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Interim release
 
+[0.10.0]: https://github.com/recreational-projects/arma3-leaflet-map/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/recreational-projects/arma3-leaflet-map/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/recreational-projects/arma3-leaflet-map/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/recreational-projects/arma3-leaflet-map/compare/v0.7.0...v0.7.1

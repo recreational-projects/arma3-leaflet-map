@@ -37,7 +37,7 @@ git clone https://github.com/recreational-projects/arma3-leaflet-map
 
 
 ## Usage
-Edit `config.toml` so that:
+Copy `config_dist.toml` to `config.toml`, and edit so that:
 - `INPUT_RELATIVE_DIR` points to the folder containing
   the grad_meh maps data
 - `OUTPUT_RELATIVE_DIR` points to the folder where the maps should be saved
@@ -81,4 +81,4 @@ uv run src/check_data_anomalies.py
 
 ### Supported and unsupported maps
 
-See https://github.com/recreational-projects/arma3-leaflet-map/blob/main/src/supported_maps.py
+[Listed here](https://github.com/recreational-projects/arma3-leaflet-map/blob/main/src/arma3_leaflet_map/supported_maps.py).
